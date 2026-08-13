@@ -1,0 +1,28 @@
+Andromeda
+Copyright (C) 2026 Omkar K.
+
+Forked from Stario (https://github.com/albu-razvan/Stario), archived May 2026.
+Original concept and engine copyright (C) Răzvan Albu.
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+--------------------------------------------------------------------------
+NOTE: this file intentionally does not attempt to reproduce the full ~700-line
+GPL-3.0 text from scratch — a hand-typed legal document is exactly the kind
+of thing that shouldn't have transcription errors in it. Before your first
+public commit, replace everything below this line with the verbatim text
+from the canonical source:
+
+    https://www.gnu.org/licenses/gpl-3.0.txt
+
+(Stario's own LICENSE file — github.com/albu-razvan/Stario/blob/main/LICENSE
+— is also a correct copy of the same text if that's easier to grab.)
+--------------------------------------------------------------------------
