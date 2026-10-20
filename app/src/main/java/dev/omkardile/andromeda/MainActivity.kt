@@ -4,23 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import dev.omkardile.andromeda.core.engine.AppRepository
 import dev.omkardile.andromeda.design.AndromedaTheme
+import dev.omkardile.andromeda.ui.drawer.DrawerScreen
 import dev.omkardile.andromeda.ui.home.BlurPocScreen
 import dev.omkardile.andromeda.ui.home.HomeScreen
+import dev.omkardile.andromeda.ui.home.IconPickerScreen
+
+private object Routes {
+    const val HOME = "home"
+    const val DRAWER = "drawer"
+    const val BLUR_POC = "blur_poc"
+    const val ICON_PICKER = "icon_picker"
+}
 
 class MainActivity : ComponentActivity() {
 
@@ -35,25 +34,29 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AndromedaTheme {
-                var showBlurPoc by remember { mutableStateOf(false) }
+                val navController = rememberNavController()
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (showBlurPoc) {
-                        BlurPocScreen()
-                    } else {
-                        HomeScreen(appRepository = appRepository)
+                NavHost(navController = navController, startDestination = Routes.HOME) {
+                    composable(Routes.HOME) {
+                        HomeScreen(
+                            appRepository = appRepository,
+                            onOpenDrawer = { navController.navigate(Routes.DRAWER) },
+                            onOpenBlurPoc = { navController.navigate(Routes.BLUR_POC) },
+                            onOpenIconPicker = { navController.navigate(Routes.ICON_PICKER) },
+                        )
                     }
-
-                    // Temporary nav — delete once real navigation exists.
-                    // One tap toggles the Phase 2 blur comparison from §3.
-                    BasicText(
-                        text = if (showBlurPoc) "← Home" else "Blur POC →",
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 48.dp, end = 16.dp)
-                            .clickable { showBlurPoc = !showBlurPoc },
-                        style = androidx.compose.ui.text.TextStyle(color = Color.White),
-                    )
+                    composable(Routes.DRAWER) {
+                        DrawerScreen(
+                            appRepository = appRepository,
+                            onBack = { navController.popBackStack() },
+                        )
+                    }
+                    composable(Routes.BLUR_POC) {
+                        BlurPocScreen()
+                    }
+                    composable(Routes.ICON_PICKER) {
+                        IconPickerScreen(onBack = { navController.popBackStack() })
+                    }
                 }
             }
         }

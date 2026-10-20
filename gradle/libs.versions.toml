@@ -22,6 +22,10 @@ haze = "1.7.2"                     # confirmed: latest stable (non-2.0-alpha) ta
 cloudy = "0.6.1"                   # confirmed current on Skydoves/cloudy
 coilCompose = "3.1.0"              # best-effort
 kotlinxCoroutines = "1.9.0"        # best-effort
+navigationCompose = "2.9.3"        # best-effort — androidx.navigation tends to track close to
+                                    # androidx.lifecycle's release train, which resolved to 2.9.4
+                                    # per the actual 0.1.2 build log, so this is an educated guess
+                                    # rather than a blind one, but still unverified
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +49,7 @@ cloudy = { group = "com.github.skydoves", name = "cloudy", version.ref = "cloudy
 
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coilCompose" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

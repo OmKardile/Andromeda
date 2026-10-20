@@ -4,6 +4,108 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [0.1.11] — 2026-08-17
+
+Real alternate-app-icon picker (plan §10) — 8 switchable icons, working
+end to end.
+
+### Added
+- **8 real launcher icons**, curated from a 20-candidate batch: Eclipse
+  (default), Ember, Orbit, Ivory, Prism, Horizon, Comet, Dusk. Roughly half
+  the original batch had a systemic off-center-crop defect (wordmark cut
+  off mid-letter, raw black wedge down one side) — those were excluded
+  rather than shipped, not touched up; that kind of defect means content
+  was never generated in the missing area, so it isn't fixable by
+  cropping/repositioning after the fact. All 8 shipped ones are legacy
+  (non-adaptive) icon resources, not adaptive-icon foreground/background
+  layers — the source art already has rounded corners baked into the
+  pixels, and Android's adaptive-icon system expects full-bleed artwork it
+  masks itself; feeding it pre-rounded art would double-mask and look
+  wrong on-device. True adaptive-icon-compliant source art (full-bleed, no
+  baked-in frame) is a real follow-up if these get more design polish
+  later, not needed for this to work correctly now.
+- **`core:engine`'s `IconSwitcher.kt`** — the actual Android mechanism for
+  switchable icons: 8 `activity-alias` entries in the manifest (added),
+  each with its own icon, all targeting the same `MainActivity`; only one
+  enabled at a time. `PackageManager.setComponentEnabledSetting()` is what
+  "switching icons" actually is on Android — there's no iOS-style runtime
+  image-swap API. The set of icons has to be declared at build time; this
+  can't add a 9th option without a new build.
+- **`ui:home`'s `IconPickerScreen.kt`** — a real picker grid, not a mockup.
+  Reachable from Home ("App icon →"). Icon resources live in
+  `common:design`'s `res/`, not `app`'s — a picker screen in `ui:home`
+  can't reference resources that only exist in `app` (they don't flow
+  backward across module dependencies), and `common:design` is a
+  dependency both `app` and `ui:home` already share.
+- MainActivity's manifest entry no longer carries the `LAUNCHER` category
+  itself — that moved to the aliases. It keeps only `HOME`/`DEFAULT`
+  (what makes Andromeda selectable as the device's home screen), which is
+  a system capability rather than something the user "sees" as an icon,
+  so it's unaffected by which alias is currently enabled.
+
+### Process note
+The architecture for this was first suggested via a parallel conversation
+with a different AI tool, using React Native patterns (`require()`,
+JS-style asset arrays) that don't apply to this project at all — this is
+native Kotlin/Compose, not RN. Caught before any of that got implemented;
+what's actually in this version is the real Android mechanism
+(`activity-alias` + `PackageManager`), unrelated to that suggestion beyond
+solving the same user-facing goal.
+
+## [0.1.10] — 2026-08-15
+
+Fixes a real compile failure in `ui:drawer`, first build attempt against
+the new module.
+
+### Fixed
+- `DrawerScreen.kt` was missing `import androidx.compose.foundation.lazy.items`.
+  `items(List<T>, ...)` is a top-level extension function on `LazyListScope`,
+  not a member — it needs an explicit import same as any other extension
+  function, regardless of how tied to `LazyColumn` it looks. Without it,
+  `items(items = ..., key = ...) { app -> ... }` fell back to
+  `LazyListScope`'s built-in member `items(count: Int, ...)` overload
+  instead, which explains every error in the report at once: "No parameter
+  named 'items'" and "No value for 'count'" (wrong overload entirely),
+  `.info`/`.handle` unresolved (called on the `Int` index that overload
+  actually provides), and the `Int`-vs-`LauncherApplication` mismatches
+  (same root cause, different symptom). `stickyHeader` was already
+  correctly imported but got reported as unresolved too — collateral
+  confusion from the same missing import within the same lambda scope,
+  same pattern as the `RowColumnParentData` incident a while back, not a
+  second bug.
+
+## [0.1.9] — 2026-08-14
+
+First real Phase 3 push: the actual app drawer (plan §1, High priority),
+plus a process note worth being upfront about.
+
+### Added
+- **New `ui:drawer` module.** `DrawerScreen.kt`: a real alphabetized app
+  list (sticky letter headers via `LazyColumn`'s `stickyHeader`), a
+  Niagara-style A–Z quick-scroll rail on the trailing edge (tap a letter,
+  jump to that section — drag-to-scroll is a reasonable follow-up, not a
+  blocker for this pass), tap-to-launch wired to `AppRepository.launch()`.
+- **Real app icons.** `AppRepository` only ever counted apps before —
+  `refresh()` now also loads each one's icon via
+  `LauncherActivityInfo.getIcon(density)`, which (unlike
+  `ApplicationInfo.loadIcon()`) handles adaptive icons and work-profile
+  badging correctly.
+- **Real Compose Navigation.** `MainActivity`'s old boolean-toggle hack is
+  gone, replaced with an actual `NavHost` (`home` / `drawer` / `blur_poc`
+  routes). The home screen's dock is now a real tap target that opens the
+  drawer — its actual eventual job, not just a blur demo anymore.
+
+### Process note
+Mid-build, this session's own working directory got reset — a side effect
+of how long this conversation has run, not anything on your end. Every
+file I'd changed since 0.1.8 was gone. Recovered cleanly by replaying
+every zip delivered so far (0.1.0 base + every CHANGES delta in order)
+into a fresh checkout, verified it matched 0.1.8 exactly before redoing
+any Phase 3 work on top of it, and only then continued. Flagging this so
+the CHANGELOG stays an honest record — nothing about the app itself
+changed because of it, but it's worth knowing the reconstruction path
+exists if it's ever needed again.
+
 ## [0.1.8] — 2026-08-11 (resolved)
 
 **Haze blur confirmed working on real hardware** (Motorola, Android 13).

@@ -18,44 +18,53 @@ this file is the practical "how do I build this" companion to that plan.
 
 ## Status
 
-**This is a Phase 1/2 scaffold, not a working launcher yet.** What's here:
+**Phase 3 in progress — a real drawer exists now, most of the launcher still doesn't.** What's here:
 
 - A buildable multi-module Gradle project with the real dependency stack
   wired up (Compose Unstyled, Haze, Cloudy, JitPack repo for Cloudy)
 - A real app-indexing engine (`core:engine`) using `LauncherApps`, adapted
   from Stario's actual `LauncherApplication.java`, with live-update support
   via `registerCallback` — confirmed against Stario's real
-  `ProfileApplicationManager.java`, not guessed at
+  `ProfileApplicationManager.java`, not guessed at. Loads real icons too
+  (`LauncherActivityInfo.getIcon`, badging/adaptive-icon-correct).
 - A design token system (`common:design`) with Stario's real accent color
   values ported over, and zero Material dependencies
-- A home screen that proves the engine → UI wiring end to end (real app
-  count over a real Haze blur), plus the Phase 2 Haze-vs-Cloudy comparison
-  screen from the plan's timeline
+- A home screen proving the engine → UI wiring end to end, a real
+  alphabetized app drawer with a Niagara-style A–Z quick-scroll rail
+  (`ui:drawer`), and the Phase 2 Haze-vs-Cloudy blur comparison screen —
+  Haze confirmed actually working on real hardware, not just compiling
+- Real Compose Navigation between all three screens — no more placeholder
+  toggles
 
 What's **not** here yet, deliberately — see the plan's §3 Gantt for when:
-the actual Niagara-style drawer, App Library folder grid, floating
-search/dock, contextual home features, categories/folders, and settings.
+the App Library folder grid, floating search/dock (the dock currently just
+opens the drawer — no search yet), contextual home features,
+categories/folders, drag-to-scroll on the quick-scroll rail, and settings.
 `reference/stario-source/` has Stario's real code for all of these, ready
 to port properly when their phase comes up instead of being rushed here.
 
 ## Module layout
 
 ```
-app/            The launcher application — MainActivity, manifest, icon.
-core/engine/    App indexing (LauncherApps-based). No Compose dependency —
-                pure Kotlin/Java, testable without a UI.
+app/            The launcher application — MainActivity (NavHost across
+                home/drawer/blur-poc), manifest, icon.
+core/engine/    App indexing + icon loading (LauncherApps-based). No
+                Compose dependency — pure Kotlin/Java, testable without a UI.
 common/design/  Colors, spacing, typography, the AndromedaTheme
                 CompositionLocal. No Material.
 ui/home/        Home screen + the Haze/Cloudy blur POC. Depends on
                 core:engine and common:design.
+ui/drawer/      The real app drawer — alphabetized list, quick-scroll rail,
+                tap-to-launch. Same dependency shape as ui:home.
 reference/      Curated real Stario source (not part of the Gradle build —
                 see reference/stario-source/README.md) for porting from
                 during later phases.
 ```
 
-Future UI modules (`ui:drawer`, `ui:search`, etc.) should follow `ui:home`'s
-shape: depend on `core:engine` + `common:design`, own their package under
-`dev.omkardile.andromeda.ui.*`, no cross-dependencies between `ui:*` modules.
+Future UI modules (`ui:search`, `ui:folders`, etc.) should follow
+`ui:home`/`ui:drawer`'s shape: depend on `core:engine` + `common:design`,
+own their package under `dev.omkardile.andromeda.ui.*`, no
+cross-dependencies between `ui:*` modules.
 
 ## Building
 

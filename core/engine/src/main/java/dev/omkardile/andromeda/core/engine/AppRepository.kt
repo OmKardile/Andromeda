@@ -10,6 +10,9 @@
  * + registerCallback for live updates, confirmed against the real source
  * rather than guessed. Multi-profile / hidden-apps / icon-pack support from
  * the original are intentionally out of scope for this first pass.
+ *
+ * Phase 3: now loads real icons too (via LauncherActivityInfo.getIcon) —
+ * HomeScreen only ever needed a count, but the drawer needs the real thing.
  */
 
 package dev.omkardile.andromeda.core.engine
@@ -26,6 +29,8 @@ class AppRepository(private val context: Context) {
     private val launcherApps =
         context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
 
+    private val densityDpi = context.resources.displayMetrics.densityDpi
+
     private val _apps = MutableStateFlow<List<LauncherApplication>>(emptyList())
     val apps: StateFlow<List<LauncherApplication>> = _apps.asStateFlow()
 
@@ -39,7 +44,11 @@ class AppRepository(private val context: Context) {
             for (activity in launcherApps.getActivityList(null, profile)) {
                 // LauncherApplication is a Java class — Kotlin doesn't allow named
                 // arguments on Java calls, so this has to be positional: (info, handle, label).
-                result += LauncherApplication(activity.applicationInfo, profile, activity.label.toString())
+                val app = LauncherApplication(activity.applicationInfo, profile, activity.label.toString())
+                // getIcon() handles adaptive icons and work-profile badging correctly —
+                // don't reach for ApplicationInfo.loadIcon() instead, it does neither.
+                app.icon = activity.getIcon(densityDpi)
+                result += app
             }
         }
 

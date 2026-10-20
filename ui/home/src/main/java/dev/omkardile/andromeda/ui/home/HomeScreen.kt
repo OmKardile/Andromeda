@@ -1,8 +1,9 @@
 /*
  * Placeholder home screen — enough to prove the engine-to-UI wiring works
  * end to end: a real installed-app count via LauncherApps (core:engine),
- * rendered over a real Haze backdrop blur. The actual Niagara-style list,
- * dock, and search from plan §1 aren't built yet — that's Phase 4 onward.
+ * rendered over a real Haze backdrop blur. The real Niagara-style list is
+ * now DrawerScreen (ui:drawer) — the dock below opens it. Search and the
+ * rest of plan §1 still aren't built — Phase 4 onward.
  * No MaterialTheme/Text here on purpose — BasicText + this module's own
  * TextStyle tokens, per the "no Material UI" requirement.
  *
@@ -12,11 +13,21 @@
  * hardware. Swapped this screen's smooth gradient for the same striped
  * pattern so the dock's blur is actually visible/provable here too, not
  * just asserted by analogy — a flat gradient wouldn't show it either way.
+ *
+ * 0.1.9: real Compose Navigation replaces MainActivity's old boolean
+ * toggle. Dock is now clickable (opens the drawer — its actual eventual
+ * job anyway), and the Blur POC link moved from a MainActivity-level
+ * overlay to a small text link here, since NavHost destinations fill their
+ * own screen rather than stacking under a persistent overlay.
+ *
+ * 0.1.11: added a link to the real app-icon picker (plan §10) — 8 real
+ * icons, switchable via activity-alias, see core:engine's IconSwitcher.
  */
 
 package dev.omkardile.andromeda.ui.home
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +57,12 @@ import dev.omkardile.andromeda.design.AndromedaType
 import dev.omkardile.andromeda.design.LocalAndromedaColors
 
 @Composable
-fun HomeScreen(appRepository: AppRepository) {
+fun HomeScreen(
+    appRepository: AppRepository,
+    onOpenDrawer: () -> Unit,
+    onOpenBlurPoc: () -> Unit,
+    onOpenIconPicker: () -> Unit,
+) {
     val apps by appRepository.apps.collectAsState()
     val colors = LocalAndromedaColors.current
     val hazeState = remember { HazeState() }
@@ -86,11 +102,24 @@ fun HomeScreen(appRepository: AppRepository) {
                 text = if (apps.isEmpty()) "Indexing apps…" else "${apps.size} apps found",
                 style = AndromedaType.Body.copy(color = colors.onSurfaceMuted),
             )
+            Spacer(Modifier.height(AndromedaSpacing.md))
+            BasicText(
+                text = "Blur POC →",
+                modifier = Modifier.clickable(onClick = onOpenBlurPoc),
+                style = AndromedaType.Label.copy(color = colors.onSurfaceMuted),
+            )
+            Spacer(Modifier.height(AndromedaSpacing.sm))
+            BasicText(
+                text = "App icon →",
+                modifier = Modifier.clickable(onClick = onOpenIconPicker),
+                style = AndromedaType.Label.copy(color = colors.onSurfaceMuted),
+            )
         }
 
-        // Layer 3 — dock placeholder, also a sibling of the source layer so
-        // its hazeEffect can actually blur what's behind it. The real
-        // floating search/dock (plan §1) lands here in Phase 4.
+        // Layer 3 — dock. Tap opens the real app drawer (ui:drawer) — this
+        // is a genuine step toward the dock's actual job, not just a blur
+        // demo anymore. The real floating search/dock look (plan §1) still
+        // lands here in Phase 4; the tap target is real already.
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -100,7 +129,8 @@ fun HomeScreen(appRepository: AppRepository) {
                 .clip(RoundedCornerShape(28.dp))
                 .hazeEffect(state = hazeState) {
                     blurRadius = 24.dp
-                },
+                }
+                .clickable(onClick = onOpenDrawer),
         )
     }
 }
