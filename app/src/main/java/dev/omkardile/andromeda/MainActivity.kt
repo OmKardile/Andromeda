@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.omkardile.andromeda.core.engine.AppRepository
 import dev.omkardile.andromeda.core.engine.CategoryRepository
 import dev.omkardile.andromeda.core.engine.HiddenAppsRepository
+import dev.omkardile.andromeda.core.engine.SettingsRepository
 import dev.omkardile.andromeda.core.engine.WallpaperRepository
 import dev.omkardile.andromeda.design.AndromedaAccent
 import dev.omkardile.andromeda.design.AndromedaColorScheme
@@ -23,14 +24,16 @@ import dev.omkardile.andromeda.ui.drawer.DrawerScreen
 import dev.omkardile.andromeda.ui.drawer.FolderGridScreen
 import dev.omkardile.andromeda.ui.home.BlurPocScreen
 import dev.omkardile.andromeda.ui.home.HomeScreen
-import dev.omkardile.andromeda.ui.home.IconPickerScreen
 import dev.omkardile.andromeda.ui.search.SearchScreen
+import dev.omkardile.andromeda.ui.settings.IconPickerScreen
+import dev.omkardile.andromeda.ui.settings.SettingsScreen
 
 private object Routes {
     const val HOME = "home"
     const val DRAWER = "drawer"
     const val FOLDERS = "folders"
     const val SEARCH = "search"
+    const val SETTINGS = "settings"
     const val BLUR_POC = "blur_poc"
     const val ICON_PICKER = "icon_picker"
 }
@@ -41,6 +44,7 @@ class MainActivity : ComponentActivity() {
     private val categoryRepository by lazy { CategoryRepository(applicationContext) }
     private val hiddenAppsRepository by lazy { HiddenAppsRepository(applicationContext) }
     private val wallpaperRepository by lazy { WallpaperRepository(applicationContext) }
+    private val settingsRepository by lazy { SettingsRepository(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,12 +55,14 @@ class MainActivity : ComponentActivity() {
         wallpaperRepository.start()
 
         setContent {
-            // Wallpaper-reactive accent, applied at the theme level so every
-            // screen inherits it (null = monochrome/unavailable → Blue).
+            // Accent resolution (0.2.4): the user's explicit choice from
+            // Settings wins; Dynamic/never-set follows the wallpaper accent
+            // (the 0.2.1+ behavior); monochrome/absent falls back to Blue.
+            val userAccentName by settingsRepository.accentName.collectAsState()
             val wallpaperAccent by wallpaperRepository.accent.collectAsState()
-            val colorScheme = remember(wallpaperAccent) {
+            val colorScheme = remember(userAccentName, wallpaperAccent) {
                 AndromedaColorScheme(
-                    accent = wallpaperAccent?.let { Color(it) } ?: AndromedaAccent.Blue.color,
+                    accent = resolveAccent(userAccentName, wallpaperAccent),
                 )
             }
 
@@ -81,8 +87,7 @@ class MainActivity : ComponentActivity() {
                             wallpaperRepository = wallpaperRepository,
                             onOpenDrawer = { navController.navigate(Routes.DRAWER) },
                             onOpenSearch = { navController.navigate(Routes.SEARCH) },
-                            onOpenBlurPoc = { navController.navigate(Routes.BLUR_POC) },
-                            onOpenIconPicker = { navController.navigate(Routes.ICON_PICKER) },
+                            onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                         )
                     }
                     composable(Routes.DRAWER) {
@@ -107,6 +112,16 @@ class MainActivity : ComponentActivity() {
                             onBack = { navController.popBackStack() },
                         )
                     }
+                    composable(Routes.SETTINGS) {
+                        SettingsScreen(
+                            appRepository = appRepository,
+                            hiddenAppsRepository = hiddenAppsRepository,
+                            settingsRepository = settingsRepository,
+                            onOpenIconPicker = { navController.navigate(Routes.ICON_PICKER) },
+                            onOpenBlurPoc = { navController.navigate(Routes.BLUR_POC) },
+                            onBack = { navController.popBackStack() },
+                        )
+                    }
                     composable(Routes.BLUR_POC) {
                         BlurPocScreen()
                     }
@@ -123,5 +138,17 @@ class MainActivity : ComponentActivity() {
         // Cheap re-read for wallpaper changes that never reached the
         // broadcast receiver (see WallpaperRepository.start's note).
         wallpaperRepository.refresh()
+    }
+
+    /** Accent precedence: explicit user choice > wallpaper-derived > Blue.
+     *  Stored names are enum names; an unknown name (renamed/removed enum
+     *  entry) degrades to the wallpaper path rather than crashing. */
+    private fun resolveAccent(userAccentName: String?, wallpaperAccent: Int?): Color {
+        userAccentName?.let { name ->
+            runCatching { AndromedaAccent.valueOf(name) }
+                .getOrNull()
+                ?.let { return it.color }
+        }
+        return wallpaperAccent?.let { Color(it) } ?: AndromedaAccent.Blue.color
     }
 }

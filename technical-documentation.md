@@ -69,6 +69,8 @@ part of the build at all — it's read-only porting material.
   (re-fires on app-index *and* hidden-set changes; hidden apps are
   filtered out before the refresh). Permutation/remap/custom-name
   mutations re-emit from cached inputs.
+- **`SettingsRepository.kt`** (0.2.4) — accent name + haptics flows;
+  the haptics key is the literal one Vibrations reads.
 - **`HiddenAppsRepository.kt`** (0.2.0) — hidden-app set as a
   `StateFlow<Set<String>>`; shares the per-profile key scheme
   (`AppKeys`) with CategoryRepository.
@@ -116,6 +118,9 @@ part of the build at all — it's read-only porting material.
 - **`ui:search`** (0.2.2) — `SearchScreen.kt`: prefix-first ranking,
   then Jaro-Winkler ≥ 0.4 descending; browser handoff row; FocusRequester
   auto-focus; imePadding. API 29 edge documented in help.md.
+- **`ui:settings`** (0.2.4) — `SettingsScreen.kt` (accent picker as
+  chunked Rows, engine list, GlassSwitch, hidden-apps manager, dev
+  links, About) + `IconPickerScreen.kt` (moved from ui:home).
 - **`ui:drawer`** — `DrawerScreen.kt`: `LazyColumn` with letter header
   items (plain items since 0.2.0 — `stickyHeader` no longer exists in
   the resolved foundation; see CHANGELOG), tap-to-launch rows with real

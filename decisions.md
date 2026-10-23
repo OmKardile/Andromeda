@@ -164,6 +164,27 @@ it waits for a real opt-in UI.
 arrives in 0.2.4 sharing the same pref file/key); the usage-stats deferral
 lifts when the settings round grows its privacy section.
 
+## 2026-10-23 — 0.2.4: settings shape, accent precedence
+
+**Decision:** Settings is one scrollable Compose Column (chunked Rows
+for swatches — never a lazy grid inside it), persisted via one prefs
+file where the haptics key is literally the one Vibrations reads.
+Accent precedence: user choice > wallpaper > Blue, with unknown stored
+names degrading to wallpaper instead of crashing. IconPickerScreen
+moves ui:home → ui:settings (its own header predicted the move).
+
+**Why:** the crash class (LazyVerticalGrid inside a scrollable parent
+= infinite height constraint) is textbook and easy to author blind —
+chunked Rows cost nothing. Sharing the pref key between Vibrations and
+SettingsRepository means the toggle can never disagree with the
+vibrator. Degrading unknown enum names matters because Settings data
+outlives enum entries. And a sideways ui:settings→ui:home dependency
+would have violated the module rule the README already promised.
+
+**What would change my mind:** if Settings grows past one screen's worth
+of sections, split into routed sub-screens before it becomes a
+scroll-and-hunt list.
+
 ## 2026-10-23 — session 3: sandbox loss, full rebuild, push authorization
 
 **Decision:** after the sandbox that authored the 0.2.x line was

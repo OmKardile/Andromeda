@@ -18,7 +18,7 @@ this file is the practical "how do I build this" companion to that plan.
 
 ## Status
 
-**Phase 3 substantially done — real home screen, drawer, App Library, and search.** What's here:
+**Phase 3 done — every §1 surface is built, plus Settings.** What's here:
 
 - A buildable multi-module Gradle project with the real dependency stack
   wired up (Compose Unstyled, Haze, Cloudy, JitPack repo for Cloudy)
@@ -45,15 +45,18 @@ this file is the practical "how do I build this" companion to that plan.
 - A battery chip with charging indicator (0.2.3) and Stario's exact
   haptic profile (5ms one-shot, preference-gated) on dock/folder/search
   taps
-- Real Compose Navigation between all six screens (home, drawer, App
-  Library, search, blur POC, icon picker) — no more placeholder toggles
+- Settings (0.2.4): accent picker (11 + Dynamic) with user-choice-wins
+  precedence, search-engine selection, a drawn spring-animated haptics
+  toggle, hidden-apps manager, dev links, and the plan §10 About copy —
+  reachable from the gear in the home's top-right glass chip
+- Real Compose Navigation between all seven screens — no more placeholder
+  toggles
 
-What's **not** here yet, deliberately — see the plan's §3 Gantt for when:
-contextual home features (usage-stats suggestions are opt-in-gated per
-plan §8 and wait for a real opt-in flow), drag-to-scroll on the
-quick-scroll rail, and settings.
-`reference/stario-source/` has Stario's real code for all of these, ready
-to port properly when their phase comes up instead of being rushed here.
+What's **not** here yet, deliberately: real-device dogfooding and the
+usage-stats opt-in flow (plan §8 gate), drag-to-scroll on the
+quick-scroll rail, and adaptive-icon source art. `reference/stario-source/`
+has Stario's real code for the ported bits, ready when their follow-up
+comes up.
 
 ## Module layout
 
@@ -74,6 +77,9 @@ ui/drawer/      The app drawer (alphabetized list, quick-scroll rail,
 ui/search/      The floating search — prefix-first + Jaro-Winkler app
                 ranking, browser-handoff web fallback. Same dependency
                 shape as ui:home.
+ui/settings/    Settings (accent/engine/haptics/hidden-apps/dev/About)
+                + the app-icon picker (moved here from ui:home in
+                0.2.4). Same dependency shape as ui:home.
 reference/      Curated real Stario source (not part of the Gradle build —
                 see reference/stario-source/README.md) for porting from
                 during later phases.

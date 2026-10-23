@@ -4,6 +4,43 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [0.2.4] — 2026-10-23
+
+Settings (plan §1's last unbuilt §1 surface) + the accent precedence fix
+that comes with it.
+
+### Added
+- **`core:engine`'s `SettingsRepository.kt`** — the persisted settings:
+  accent choice (enum name, or null = Dynamic/follow-wallpaper) and
+  haptics (the *same* pref key Vibrations reads — one source of truth,
+  two readers, no sync bug possible). StateFlows over one prefs file.
+- **New `ui:settings` module.** `SettingsScreen.kt`, one scrollable
+  Column, no preference-fragment machinery:
+  - **Accent picker** — 11 accents + Dynamic, chunked Rows on purpose
+    (a LazyVerticalGrid inside a scrollable Column is the classic
+    infinite-height crash; caught at authoring, not on a device)
+  - **Search engine** — Stario's ten engines, selected state persisted
+    through the ported SearchEngines
+  - **Haptics** — a `GlassSwitch` (spring-animated, drawn, carries the
+    haptic profile itself; no Material Switch anywhere in the project)
+  - **Hidden apps manager** — the set the drawer and App Library both
+    filter against, with real icons and a drawn checkmark
+  - **Developer links** — Blur POC and app-icon picker, moved off the
+    home screen where they were always guests
+  - **About** — the plan §10 attribution copy (fork credit, Stario's
+    author by name, links)
+- **`IconPickerScreen.kt` moved modules** (ui:home → ui:settings) — its
+  own original header predicted this move; settings now links to it
+  without a sideways ui:* dependency (the README's module rule).
+- **Accent precedence in MainActivity**: explicit user choice (from
+  Settings) > wallpaper-derived accent > Blue. Unknown stored names
+  (renamed enum entries across versions) degrade to the wallpaper path
+  instead of crashing. Default (never set) = 0.2.1's wallpaper-reactive
+  behavior, unchanged.
+- Home screen: the top-right glass chip now carries a drawn gear
+  (Settings entry point) beside the battery readout; dev links removed
+  from the home body.
+
 ## [0.2.3] — 2026-10-23
 
 Feedback & status (the plan §1 "spring physics/feel" slice that doesn't

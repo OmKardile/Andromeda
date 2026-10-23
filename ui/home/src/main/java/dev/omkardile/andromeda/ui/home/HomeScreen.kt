@@ -24,6 +24,10 @@
  * one-shot, ported) and a battery chip (top-right) off the sticky
  * ACTION_BATTERY_CHANGED broadcast.
  *
+ * 0.2.4: dev links moved to Settings (they were always guests here) —
+ * the battery chip's top-right corner gained a drawn gear companion
+ * instead.
+ *
  * No MaterialTheme/Text here on purpose — BasicText + this module's own
  * TextStyle tokens, per the "no Material UI" requirement.
  */
@@ -62,6 +66,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -88,8 +93,7 @@ fun HomeScreen(
     wallpaperRepository: WallpaperRepository,
     onOpenDrawer: () -> Unit,
     onOpenSearch: () -> Unit,
-    onOpenBlurPoc: () -> Unit,
-    onOpenIconPicker: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val apps by appRepository.apps.collectAsState()
     val wallpaper by wallpaperRepository.wallpaper.collectAsState()
@@ -142,21 +146,9 @@ fun HomeScreen(
                 text = if (apps.isEmpty()) "Indexing apps…" else "${apps.size} apps found",
                 style = AndromedaType.Label.copy(color = colors.onSurfaceMuted),
             )
-            Spacer(Modifier.height(AndromedaSpacing.md))
-            BasicText(
-                text = "Blur POC →",
-                modifier = Modifier.clickable(onClick = onOpenBlurPoc),
-                style = AndromedaType.Label.copy(color = colors.onSurfaceMuted),
-            )
-            Spacer(Modifier.height(AndromedaSpacing.sm))
-            BasicText(
-                text = "App icon →",
-                modifier = Modifier.clickable(onClick = onOpenIconPicker),
-                style = AndromedaType.Label.copy(color = colors.onSurfaceMuted),
-            )
         }
 
-        // Battery chip (0.2.3) — top-right, glass over the wallpaper.
+        // Settings gear + battery chip (0.2.4) — top-right corner glass.
         battery?.let { status ->
             Row(
                 modifier = Modifier
@@ -177,6 +169,16 @@ fun HomeScreen(
                     text = "${status.percentage}%",
                     style = AndromedaType.Label.copy(color = colors.onSurface),
                 )
+                Spacer(Modifier.width(AndromedaSpacing.md))
+                Box(
+                    modifier = Modifier
+                        .clickable(onClick = {
+                            Vibrations.vibrate(context)
+                            onOpenSettings()
+                        }),
+                ) {
+                    GearGlyph(color = colors.onSurface)
+                }
             }
         }
 
@@ -298,6 +300,32 @@ private fun BoltGlyph(color: Color, modifier: Modifier = Modifier) {
             close()
         }
         drawPath(path, color = color)
+    }
+}
+
+/** Settings gear — a stroked ring with eight radial teeth. */
+@Composable
+private fun GearGlyph(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(16.dp)) {
+        val stroke = 1.8.dp.toPx()
+        val radius = size.minDimension / 2 - stroke
+
+        for (tooth in 0 until 8) {
+            rotate(degrees = 45f * tooth, pivot = center) {
+                drawRoundRect(
+                    color = color,
+                    topLeft = Offset(center.x - stroke * 0.6f, 0f),
+                    size = Size(stroke * 1.2f, stroke * 1.6f),
+                    cornerRadius = CornerRadius(stroke * 0.6f, stroke * 0.6f),
+                )
+            }
+        }
+        drawCircle(
+            color = color,
+            radius = radius - stroke,
+            center = center,
+            style = Stroke(width = stroke),
+        )
     }
 }
 

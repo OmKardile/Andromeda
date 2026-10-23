@@ -1,18 +1,18 @@
 /*
  * Picks between the alternate app icons declared as activity-aliases in
  * the manifest (see core:engine's IconSwitcher.kt for why it has to work
- * that way on Android). Lives in ui:home rather than its own module for
- * now — one screen doesn't earn a whole module yet; if a real Settings
- * area grows up around this later, this is a natural first thing to move
- * into it.
+ * that way on Android). Lived in ui:home from 0.1.11 until 0.2.4, when
+ * the real Settings area grew up around it — this was always the plan
+ * (see the original file header note), and it's why the screen moved
+ * modules rather than settings linking sideways into ui:home.
  *
  * The icon PNGs live in common:design's res/, not app's or this module's —
  * a picker screen here can't reference resources that only exist in the
  * app module (resources don't flow backward across module dependencies),
- * and common:design is a dependency both app and ui:home already share.
+ * and common:design is a dependency both app and this module share.
  */
 
-package dev.omkardile.andromeda.ui.home
+package dev.omkardile.andromeda.ui.settings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
