@@ -72,6 +72,13 @@ part of the build at all — it's read-only porting material.
 - **`HiddenAppsRepository.kt`** (0.2.0) — hidden-app set as a
   `StateFlow<Set<String>>`; shares the per-profile key scheme
   (`AppKeys`) with CategoryRepository.
+- **`WallpaperRepository.kt`** (0.2.1) — wallpaper Bitmap snapshot
+  (screen-scaled) + accent ARGB as StateFlows;
+  `OnColorsChangedListener` as the change signal (the old broadcast is
+  gone from API 36) + resume re-read.
+- **`AccentExtractor.kt`** (0.2.1) — pure-Kotlin accent quantizer
+  (12 hue buckets, s²·v weights, monochrome → null, dark-UI nudge);
+  the bitmap wrapper samples to ~192px first.
 
 ## common:design
 
@@ -90,8 +97,10 @@ part of the build at all — it's read-only porting material.
 
 ## UI modules
 
-- **`ui:home`** — `HomeScreen.kt` (engine-to-UI wiring proof: live app
-  count over a Haze-blurred striped backdrop; dock opens the drawer),
+- **`ui:home`** — `HomeScreen.kt`: the real home screen (0.2.1) —
+  localized clock (30s aligned tick), date, greeting, live app count,
+  real-wallpaper Haze backdrop (striped fallback for live wallpapers),
+  accent applied one level up in MainActivity so all screens inherit it.
   `BlurPocScreen.kt` (the Phase 2 Haze-vs-Cloudy comparison; hazeSource
   /hazeEffect must be *siblings*, not parent-child — that was the 0.1.5
   bug), `IconPickerScreen.kt` (8-icon grid backed by `IconSwitcher`).

@@ -101,6 +101,29 @@ header can return as a scroll-aware external header if the UX needs it.
 remap UI (moving apps *between* categories — engine support exists:
 `remapApp`/`renameCategory`) a blocker, add it in the settings round.
 
+## 2026-10-23 — 0.2.1: wallpaper change signal, and the accent quantizer
+
+**Decision:** react to wallpaper changes via
+`WallpaperManager.OnColorsChangedListener` (plus a cheap onResume re-read),
+and extract the accent with our own pure-Kotlin quantizer rather than
+androidx.palette (which Stario's lineage used).
+
+**Why:** `ACTION_WALLPAPER_CHANGED` was deprecated in API 33 and is
+*removed* from the API 36 SDK — verified against the platform jar when
+the compile failed. The listener is the sanctioned replacement and
+doubles as a live-wallpaper signal. androidx.palette would drag Material
+lineage into a project whose stated identity is "no Material You";
+12 hue buckets with saturation² × value weighting is ~80 lines, fully
+JVM-testable, and biased toward *vivid* (not muted) colors, which suits
+an 11-fixed-accent design language better than palette's tonal palettes.
+A monochrome/null result is a feature, not a failure: it hands control
+back to the default accent instead of inventing a gray "accent".
+
+**What would change my mind:** if real-device accent extraction proves
+too noisy across wallpaper types, gate it behind a settings toggle
+(the settings round is 0.2.4) or blend with the system's
+`WallpaperColors` primary.
+
 ## 2026-10-23 — session 3: sandbox loss, full rebuild, push authorization
 
 **Decision:** after the sandbox that authored the 0.2.x line was

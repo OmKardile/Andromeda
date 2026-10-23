@@ -4,6 +4,40 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [0.2.1] — 2026-10-23
+
+The home screen becomes a real home screen (plan §1: clock, wallpaper-
+reactive tinting).
+
+### Added
+- **`core:engine`'s `WallpaperRepository.kt`** — system wallpaper as a
+  downscaled Bitmap StateFlow (screen-sized, not wallpaper-native —
+  4K bitmaps in memory are pure waste) plus an accent ARGB StateFlow.
+  Change signal is `WallpaperManager.OnColorsChangedListener` + a cheap
+  resume-time re-read (see Fixed for why not the obvious broadcast).
+- **`core:engine`'s `AccentExtractor.kt`** — purpose-built quantizer
+  (Stario's accent path went through androidx.palette; this project
+  carries no Material). Pure-Kotlin core: 12 hue buckets,
+  saturation² × value weights, monochrome → null, dark-UI visibility
+  nudge on the winner. JVM-testable end to end (ARGB ints in, ARGB out).
+- **`HomeScreen.kt` rewritten** — localized clock (30s tick aligned to
+  the half-minute so a long suspension never shows a stale minute),
+  localized full date, time-of-day greeting, and the **real wallpaper
+  as the Haze backdrop** (the 0.1.8 stripes demoted to the live-wallpaper
+  fallback, since `getDrawable()` returns null for live wallpapers and
+  Haze needs visible content behind it).
+- MainActivity feeds the wallpaper accent into `AndromedaTheme` (every
+  screen inherits it); monochrome/absent falls back to Blue. Wallpaper
+  re-read on resume.
+
+### Fixed
+- Caught while writing the receiver: **`ACTION_WALLPAPER_CHANGED` is
+  removed from the API 36 SDK** (deprecated API 33, now not even
+  compiling) — the compile against `platforms;android-36` proved it.
+  Switched to the platform's sanctioned replacement
+  (`OnColorsChangedListener`), which also fires for live-wallpaper
+  color drift. Another find that only machine verification catches.
+
 ## [0.2.0] — 2026-10-23
 
 Documentation round + the App Library — plan §1's High-priority folder

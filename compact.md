@@ -10,25 +10,25 @@ Andromeda: Android launcher, GPL-3.0 fork/rebuild of archived Stario
 v2.16. Kotlin + Compose, no Material, Haze + Cloudy blurs, Niagara/iOS
 inspiration. Product plan: `Launcher_Plan_Stario_Fork_Refreshed_Aug2026.md`.
 
-## State (as of v0.2.0, 2026-10-23)
+## State (as of v0.2.1, 2026-10-23)
 
-- Version: **0.2.0** (versionCode 13). Tags: v0.1.8 @ f7e590c,
-  v0.1.11 @ e8cd3d0 (retro), v0.2.0 on its own commit.
+- Version: **0.2.1** (versionCode 14). Tags: v0.1.8 @ f7e590c,
+  v0.1.11 @ e8cd3d0 (retro), v0.2.0, v0.2.1 on their own commits.
 - Built: engine (indexing, icons, icon-switching, categories, hidden
-  apps), design tokens + motion, home (blur proof + count), drawer
-  (A–Z list + quick-scroll rail), **App Library folder grid** (0.2.0:
-  Cloudy cards, Haze detail scrim, spring entrance, long-press-to-move),
+  apps, wallpaper + accent extraction), design tokens + motion,
+  home (clock/date/greeting, real-wallpaper backdrop, wallpaper accent),
+  drawer (A–Z list + quick-scroll rail), App Library folder grid,
   blur POC, 8 switchable launcher icons, 5-route navigation.
 - Not built (deliberately): search + dock search, contextual home,
-  wallpaper-reactive tint, settings, tests, CI, real font, drag-scroll
-  rail. Stario reference sources for each are in
-  `reference/stario-source/`.
+  settings, tests, CI, real font, drag-scroll rail. Stario reference
+  sources for each are in `reference/stario-source/`.
 - Tracker: 0 issues, 0 PRs (open or closed, ever). No TODO/FIXME in
   our code (one in reference/, Stario's own).
 - **Compile status: verified from 0.2.0 on** (real SDK + Gradle 8.11.1
   + JDK 17 in the authoring environment). 0.1.x claims were
-  doc-reasoned, not machine-verified — the stickyHeader baseline bug
-  proves why that distinction mattered.
+  doc-reasoned, not machine-verified — the stickyHeader and
+  ACTION_WALLPAPER_CHANGED baseline bugs prove why that distinction
+  mattered.
 
 ## Open flags (old → resolved when noted)
 

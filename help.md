@@ -65,6 +65,10 @@ way lives in `decisions.md`; how it's wired lives in
   headers in the drawer are plain items now. If you see
   "Unresolved reference 'stickyHeader'", that's why — don't fight it,
   replace it.
+- **`ACTION_WALLPAPER_CHANGED` is gone too** (0.2.1): deprecated API
+  33, removed from the API 36 SDK — it doesn't compile against
+  `platforms;android-36`. Use `WallpaperManager
+  .addOnColorsChangedListener` (see WallpaperRepository.start).
 - **`weight()` is scope-scoped** (0.1.4): importing
   `androidx.compose.foundation.layout.weight` explicitly resolves to the
   wrong symbol and shadows the Row/Column one. Don't import it; it's

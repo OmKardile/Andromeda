@@ -7,13 +7,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.omkardile.andromeda.core.engine.AppRepository
 import dev.omkardile.andromeda.core.engine.CategoryRepository
 import dev.omkardile.andromeda.core.engine.HiddenAppsRepository
+import dev.omkardile.andromeda.core.engine.WallpaperRepository
+import dev.omkardile.andromeda.design.AndromedaAccent
+import dev.omkardile.andromeda.design.AndromedaColorScheme
 import dev.omkardile.andromeda.design.AndromedaTheme
+import androidx.compose.ui.graphics.Color
 import dev.omkardile.andromeda.ui.drawer.DrawerScreen
 import dev.omkardile.andromeda.ui.drawer.FolderGridScreen
 import dev.omkardile.andromeda.ui.home.BlurPocScreen
@@ -33,6 +38,7 @@ class MainActivity : ComponentActivity() {
     private val appRepository by lazy { AppRepository(applicationContext) }
     private val categoryRepository by lazy { CategoryRepository(applicationContext) }
     private val hiddenAppsRepository by lazy { HiddenAppsRepository(applicationContext) }
+    private val wallpaperRepository by lazy { WallpaperRepository(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,9 +46,19 @@ class MainActivity : ComponentActivity() {
 
         appRepository.refresh()
         appRepository.registerForChanges()
+        wallpaperRepository.start()
 
         setContent {
-            AndromedaTheme {
+            // Wallpaper-reactive accent, applied at the theme level so every
+            // screen inherits it (null = monochrome/unavailable → Blue).
+            val wallpaperAccent by wallpaperRepository.accent.collectAsState()
+            val colorScheme = remember(wallpaperAccent) {
+                AndromedaColorScheme(
+                    accent = wallpaperAccent?.let { Color(it) } ?: AndromedaAccent.Blue.color,
+                )
+            }
+
+            AndromedaTheme(colorScheme = colorScheme) {
                 // Hidden apps are filtered out BEFORE the category refresh,
                 // and this re-fires whenever either input changes — a
                 // hidden-set edit on its own must re-sort the App Library
@@ -60,6 +76,7 @@ class MainActivity : ComponentActivity() {
                     composable(Routes.HOME) {
                         HomeScreen(
                             appRepository = appRepository,
+                            wallpaperRepository = wallpaperRepository,
                             onOpenDrawer = { navController.navigate(Routes.DRAWER) },
                             onOpenBlurPoc = { navController.navigate(Routes.BLUR_POC) },
                             onOpenIconPicker = { navController.navigate(Routes.ICON_PICKER) },
@@ -89,5 +106,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Cheap re-read for wallpaper changes that never reached the
+        // broadcast receiver (see WallpaperRepository.start's note).
+        wallpaperRepository.refresh()
     }
 }
