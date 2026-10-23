@@ -59,6 +59,12 @@ way lives in `decisions.md`; how it's wired lives in
   top-level extension on `LazyListScope`, not a member —
   `import androidx.compose.foundation.lazy.items`. Missing it produces
   bafflingly wrong overload errors, not "unresolved reference".
+- **`stickyHeader` is gone** (0.2.0, baseline bug): deprecated in
+  Compose Foundation 1.7, removed since — BOM 2026.06.00's
+  `LazyListScope` has only `item`/`items`/`itemsIndexed`. Letter
+  headers in the drawer are plain items now. If you see
+  "Unresolved reference 'stickyHeader'", that's why — don't fight it,
+  replace it.
 - **`weight()` is scope-scoped** (0.1.4): importing
   `androidx.compose.foundation.layout.weight` explicitly resolves to the
   wrong symbol and shadows the Row/Column one. Don't import it; it's

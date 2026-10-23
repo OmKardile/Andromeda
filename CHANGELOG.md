@@ -4,25 +4,74 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
-## [Unreleased]
+## [0.2.0] — 2026-10-23
 
-Documentation-and-process round — no app code changed.
+Documentation round + the App Library — plan §1's High-priority folder
+grid, built over Stario's real category system.
 
 ### Added
-- Onboarding doc set: `technical-documentation.md` (how the codebase is
-  actually put together), `decisions.md` (dated log of the *why* behind
-  non-obvious choices), `help.md` (build setup, FAQ, traps already hit),
-  `compact.md` (one-screen state snapshot), plus this CHANGELOG's
-  [Unreleased] section itself and a Documentation index in the README.
-- Retroactive git tags for the versions that predate this repo's git
-  history granularity: `v0.1.8` (initial push commit) and `v0.1.11`.
+- Onboarding doc set (from the docs round folded into this release):
+  `technical-documentation.md`, `decisions.md`, `help.md`, `compact.md`,
+  a Documentation index in the README, and this CHANGELOG's Unreleased
+  practice. Retroactive git tags `v0.1.8` and `v0.1.11`.
+
+- **`core:engine`'s `CategoryRepository.kt`** — decoupled port of Stario's
+  category trio (`Category`/`CategoryManager`/`CategoryMappings`). Category
+  identifiers are Stario's exact UUID scheme (`nameUUIDFromBytes` over the
+  4-byte category int), and the SharedPreferences layout mirrors Stario's
+  (`CATEGORIES` remaps, `CATEGORY_NAMES` custom names,
+  `CATEGORY_MAP.CATEGORIES` folder order, `CATEGORY_MAP.<uuid>` app order)
+  so persisted state stays schema-compatible. `StateFlow` instead of the
+  listener zoo; MainActivity owns the recompute trigger.
+- **`core:engine`'s `HiddenAppsRepository.kt`** — the hidden-apps set
+  (Stario's Settings' hide concept), sharing one per-profile key scheme
+  (`AppKeys`) with CategoryRepository so the two can't disagree about app
+  identity. Hidden apps are now actually hidden — from the drawer and the
+  App Library both.
+- **`ui:drawer`'s `FolderGridScreen.kt`** — 2-column liquid-glass folder
+  cards (Cloudy, per plan §2's blur layering); tap opens a detail overlay
+  with a Haze-blurred scrim (`HazeTint`, 1.x `tints = listOf(...)` API) and
+  a spring entrance (`MutableTransitionState` + `AndromedaMotion`
+  tokens). Long-press an app in the detail to pick it up, tap a slot to
+  move it — the permutation persists through CategoryRepository (Stario's
+  `updatePermutation` semantics).
+- **`common:design`'s `Motion.kt`** — spring tokens (`snappy` / `gentle` /
+  `entrance`) so physics tuning has one home, per the plan's later
+  "Animations & Physics Tuning" phase. Plus `Drawables.kt`: the
+  `Drawable.toImageBitmapOrNull()` helper promoted from DrawerScreen
+  (promoted because the folder grid needed a second copy).
+- Drawer header gained a **Folders →** link; MainActivity wires the new
+  `folders` route and re-fires the category refresh whenever the app index
+  *or* the hidden set changes (hidden apps are filtered out before the
+  refresh — that ordering was the mid-version bug this caught).
+- `compose-animation` added to the version catalog (BOM-managed) and wired
+  into `common:design` + `ui:drawer`.
+
+### Fixed
+- **`stickyHeader` no longer exists** in the foundation version BOM
+  2026.06.00 resolves (deprecated in 1.7, since removed) — the drawer's
+  letter headers are now plain list items that scroll with content, not
+  pinned headers. A baseline bug caught by this version's first real
+  compile: 0.1.9–0.1.11's drawer never compiled against its own pinned
+  BOM as-is (the owner's local environment evidently resolved an older
+  foundation). Pinned headers can return as a scroll-aware external
+  header pass if the stickiness is missed in practice.
 
 ### Removed
 - `business-documentation.md` — created in a local-only session and
-  removed before anything was ever published: the project is going open
-  source, and its content (licensing posture, privacy posture) is either
-  already covered by the plan doc and README or not appropriate for a
-  public repo. Never existed in any published commit.
+  removed before anything was ever published (open-source direction; see
+  `decisions.md` 2026-10-20). Never existed in any published commit.
+
+### Process note
+This version is a rebuild. The original 0.2.x line (and the docs commit)
+were authored in a sandbox that was destroyed before anything was pushed
+— see `decisions.md` 2026-10-23 for the full account. The rebuild was
+verified differently than every version before it: a real Android SDK +
+Gradle 8.11.1 + JDK 17 in the authoring environment, so **this is the
+project's first machine-verified build** (the `stickyHeader` fix above
+is the proof that verification was worth it). The earlier versions'
+compile-status claims stand as written in their own entries — reasoning,
+not machines, for 0.1.x.
 
 ## [0.1.11] — 2026-08-17
 

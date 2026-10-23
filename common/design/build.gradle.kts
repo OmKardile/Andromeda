@@ -30,6 +30,9 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
 
+    // Motion tokens (AndromedaMotion, 0.2.0) build on animation-core springs.
+    implementation(libs.compose.animation)
+
     // Not yet called from any Kotlin here — AndromedaTheme (Theme.kt) is a
     // plain CompositionLocal for now. Wired up ahead of use so Gradle
     // confirms it resolves; check composeunstyled.com/docs for whether its

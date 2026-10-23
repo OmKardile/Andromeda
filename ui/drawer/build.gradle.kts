@@ -32,4 +32,10 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
+    implementation(libs.compose.animation)
+
+    // Folder grid (0.2.0): Cloudy for liquid-glass folder cards, Haze for
+    // the blurred detail scrim — the plan §2 blur layering, same as ui:home.
+    implementation(libs.haze)
+    implementation(libs.cloudy)
 }

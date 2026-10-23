@@ -12,16 +12,26 @@
  * gets the core behavior in now, drag is a reasonable follow-up rather
  * than a blocker.
  *
+ * 0.2.0: hidden apps are actually hidden here too (HiddenAppsRepository
+ * — same set the App Library filters against), and the header gained a
+ * link into the App Library (FolderGridScreen, same module). The
+ * Drawable→ImageBitmap helper moved out of this file into common:design
+ * (Drawables.kt) — the folder grid needs it too.
+ *
+ * Also 0.2.0, found by this version's first real compile: LazyColumn's
+ * `stickyHeader` no longer exists in the foundation version BOM 2026.06.00
+ * resolves (deprecated 1.7, since removed — LazyListScope has only
+ * item/items/itemsIndexed now). The letter headers are therefore plain
+ * list items that scroll with content, not pinned. A pinned-header pass
+ * (scroll-aware external header) is the follow-up if the stickiness is
+ * missed in practice; see CHANGELOG 0.2.0.
+ *
  * No MaterialTheme/Text/LazyColumn-with-Material-defaults here — BasicText
  * + this module's own tokens, consistent with the rest of the project.
  */
 
 package dev.omkardile.andromeda.ui.drawer
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,7 +50,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.stickyHeader
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -49,14 +58,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import dev.omkardile.andromeda.core.engine.AppRepository
+import dev.omkardile.andromeda.core.engine.HiddenAppsRepository
 import dev.omkardile.andromeda.core.engine.LauncherApplication
 import dev.omkardile.andromeda.design.AndromedaSpacing
 import dev.omkardile.andromeda.design.AndromedaType
 import dev.omkardile.andromeda.design.LocalAndromedaColors
+import dev.omkardile.andromeda.design.toImageBitmapOrNull
 import kotlinx.coroutines.launch
 
 private data class LetterSection(
@@ -80,13 +89,22 @@ private fun buildSections(apps: List<LauncherApplication>): List<LetterSection> 
 }
 
 @Composable
-fun DrawerScreen(appRepository: AppRepository, onBack: () -> Unit) {
+fun DrawerScreen(
+    appRepository: AppRepository,
+    hiddenAppsRepository: HiddenAppsRepository,
+    onOpenFolders: () -> Unit,
+    onBack: () -> Unit,
+) {
     val apps by appRepository.apps.collectAsState()
+    val hidden by hiddenAppsRepository.hidden.collectAsState()
+    val visible = remember(apps, hidden) {
+        apps.filterNot { hidden.contains(hiddenAppsRepository.keyOf(it)) }
+    }
     val colors = LocalAndromedaColors.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    val sections = remember(apps) { buildSections(apps) }
+    val sections = remember(visible) { buildSections(visible) }
 
     Box(
         modifier = Modifier
@@ -104,11 +122,18 @@ fun DrawerScreen(appRepository: AppRepository, onBack: () -> Unit) {
                     text = "All apps",
                     style = AndromedaType.Title.copy(color = colors.onSurface),
                 )
-                BasicText(
-                    text = "← Home",
-                    modifier = Modifier.clickable(onClick = onBack),
-                    style = AndromedaType.Label.copy(color = colors.onSurface),
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(AndromedaSpacing.md)) {
+                    BasicText(
+                        text = "Folders →",
+                        modifier = Modifier.clickable(onClick = onOpenFolders),
+                        style = AndromedaType.Label.copy(color = colors.onSurface),
+                    )
+                    BasicText(
+                        text = "← Home",
+                        modifier = Modifier.clickable(onClick = onBack),
+                        style = AndromedaType.Label.copy(color = colors.onSurface),
+                    )
+                }
             }
 
             Row(modifier = Modifier.fillMaxSize()) {
@@ -118,7 +143,7 @@ fun DrawerScreen(appRepository: AppRepository, onBack: () -> Unit) {
                     contentPadding = PaddingValues(horizontal = AndromedaSpacing.lg, vertical = AndromedaSpacing.sm),
                 ) {
                     sections.forEach { section ->
-                        stickyHeader(key = "header_${section.letter}") {
+                        item(key = "header_${section.letter}") {
                             LetterHeader(section.letter)
                         }
                         items(
@@ -205,24 +230,5 @@ private fun QuickScrollRail(
                 style = AndromedaType.Label.copy(color = colors.onSurfaceMuted),
             )
         }
-    }
-}
-
-private fun Drawable.toImageBitmapOrNull(): ImageBitmap? {
-    return try {
-        val bitmap = if (this is BitmapDrawable && bitmap != null) {
-            bitmap
-        } else {
-            val width = intrinsicWidth.coerceAtLeast(1)
-            val height = intrinsicHeight.coerceAtLeast(1)
-            val target = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(target)
-            setBounds(0, 0, canvas.width, canvas.height)
-            draw(canvas)
-            target
-        }
-        bitmap.asImageBitmap()
-    } catch (e: Exception) {
-        null
     }
 }

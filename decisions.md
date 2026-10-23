@@ -77,6 +77,30 @@ GPL-3.0 code from Stario remains the only line-faithful porting source.
 entirely different rights, and "just for reference" is how license
 messes happen. Behavior is not copyrightable; code is.
 
+## 2026-10-23 — 0.2.0: App Library port shape, and the stickyHeader drop
+
+**Decision:** port Stario's category trio as one `CategoryRepository` with
+StateFlow (not the original's three listener interfaces), keep the UUID
+scheme and SharedPreferences layout byte-compatible, and let MainActivity
+own the recompute trigger. Deviation: category ints without a default
+name fold into Unsorted (Stario rendered unnamed folders); default names
+are Kotlin constants, not resources, keeping the engine resource-free
+and JVM-testable. Also: drawer letter headers ship as *plain items* —
+`stickyHeader` is gone from the resolved foundation.
+
+**Why:** the trio's coupling (Stario's Application singleton, its prefs
+wrapper, `UiUtils.post`) is exactly what this fork exists to shed;
+StateFlow collapses the listener zoo with zero loss. Schema-compatible
+persistence means a Stario-to-Andromeda upgrade path stays possible.
+`stickyHeader` was deprecated in Compose Foundation 1.7 and removed
+since — BOM 2026.06.00 has only `item`/`items`/`itemsIndexed` on
+`LazyListScope`. Verified by decompiling the resolved jar; a pinned
+header can return as a scroll-aware external header if the UX needs it.
+
+**What would change my mind:** if real-device folder usage makes the
+remap UI (moving apps *between* categories — engine support exists:
+`remapApp`/`renameCategory`) a blocker, add it in the settings round.
+
 ## 2026-10-23 — session 3: sandbox loss, full rebuild, push authorization
 
 **Decision:** after the sandbox that authored the 0.2.x line was

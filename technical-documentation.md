@@ -1,6 +1,6 @@
 # Technical documentation
 
-How the Andromeda codebase is actually put together, as of **v0.1.11**
+How the Andromeda codebase is actually put together, as of **v0.2.0**
 (this file updates in the same commit as the code it describes — see
 `decisions.md` for the *why* behind choices, `compact.md` for a
 one-screen state snapshot). For product vision and the phase plan, read
@@ -62,6 +62,16 @@ part of the build at all — it's read-only porting material.
   `PackageManager.setComponentEnabledSetting()`. First-run detection
   handles the `COMPONENT_ENABLED_STATE_DEFAULT` case (falls back to
   Eclipse, the manifest-enabled default).
+- **`CategoryRepository.kt`** (0.2.0) — decoupled port of Stario's
+  category trio. UUID identifiers + SharedPreferences layout stay
+  byte-compatible with Stario; listeners became one `StateFlow<
+  List<AppCategory>>`. MainActivity owns the recompute trigger
+  (re-fires on app-index *and* hidden-set changes; hidden apps are
+  filtered out before the refresh). Permutation/remap/custom-name
+  mutations re-emit from cached inputs.
+- **`HiddenAppsRepository.kt`** (0.2.0) — hidden-app set as a
+  `StateFlow<Set<String>>`; shares the per-profile key scheme
+  (`AppKeys`) with CategoryRepository.
 
 ## common:design
 
@@ -85,9 +95,15 @@ part of the build at all — it's read-only porting material.
   `BlurPocScreen.kt` (the Phase 2 Haze-vs-Cloudy comparison; hazeSource
   /hazeEffect must be *siblings*, not parent-child — that was the 0.1.5
   bug), `IconPickerScreen.kt` (8-icon grid backed by `IconSwitcher`).
-- **`ui:drawer`** — `DrawerScreen.kt`: `LazyColumn` with sticky letter
-  headers, tap-to-launch rows with real icons, and a Niagara-style A–Z
-  quick-scroll rail (tap-to-jump; drag-to-scroll is deliberate backlog).
+- **`ui:drawer`** — `DrawerScreen.kt`: `LazyColumn` with letter header
+  items (plain items since 0.2.0 — `stickyHeader` no longer exists in
+  the resolved foundation; see CHANGELOG), tap-to-launch rows with real
+  icons, and a Niagara-style A–Z quick-scroll rail (tap-to-jump;
+  drag-to-scroll is deliberate backlog). `FolderGridScreen.kt`
+  (0.2.0): the App Library — 2-column Cloudy folder cards, a
+  Haze-blurred detail overlay (source/effect siblings, `HazeTint`),
+  spring entrance, long-press-to-move reordering persisted through
+  CategoryRepository.
 
 ## Cross-cutting conventions
 
@@ -124,8 +140,8 @@ part of the build at all — it's read-only porting material.
 
 ## What's deliberately not built yet
 
-App Library folder grid (categories/folders), floating search + dock
-search, contextual home, settings, tests, CI, real font, drag-scroll on
-the rail, adaptive-icon source art. Each has Stario reference source
-under `reference/stario-source/` waiting for its phase — see `compact.md`
+Floating search + dock search, contextual home, wallpaper-reactive
+accent, settings, tests, CI, real font, drag-scroll on the rail,
+adaptive-icon source art. Each has Stario reference source under
+`reference/stario-source/` waiting for its phase — see `compact.md`
 for the live status board.

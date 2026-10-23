@@ -18,7 +18,7 @@ this file is the practical "how do I build this" companion to that plan.
 
 ## Status
 
-**Phase 3 in progress — a real drawer exists now, most of the launcher still doesn't.** What's here:
+**Phase 3 substantially done — the App Library exists now.** What's here:
 
 - A buildable multi-module Gradle project with the real dependency stack
   wired up (Compose Unstyled, Haze, Cloudy, JitPack repo for Cloudy)
@@ -39,9 +39,9 @@ this file is the practical "how do I build this" companion to that plan.
   toggles
 
 What's **not** here yet, deliberately — see the plan's §3 Gantt for when:
-the App Library folder grid, floating search/dock (the dock currently just
-opens the drawer — no search yet), contextual home features,
-categories/folders, drag-to-scroll on the quick-scroll rail, and settings.
+floating search/dock (the dock currently just opens the drawer — no
+search yet), contextual home features, wallpaper-reactive tinting,
+drag-to-scroll on the quick-scroll rail, and settings.
 `reference/stario-source/` has Stario's real code for all of these, ready
 to port properly when their phase comes up instead of being rushed here.
 
@@ -56,8 +56,11 @@ common/design/  Colors, spacing, typography, the AndromedaTheme
                 CompositionLocal. No Material.
 ui/home/        Home screen, blur POC, app-icon picker. Depends on
                 core:engine and common:design.
-ui/drawer/      The real app drawer — alphabetized list, quick-scroll rail,
-                tap-to-launch. Same dependency shape as ui:home.
+ui/drawer/      The app drawer (alphabetized list, quick-scroll rail,
+                tap-to-launch) and the App Library folder grid
+                (FolderGridScreen: Cloudy cards, Haze detail scrim,
+                spring entrance, long-press-to-move reorder). Same
+                dependency shape as ui:home.
 reference/      Curated real Stario source (not part of the Gradle build —
                 see reference/stario-source/README.md) for porting from
                 during later phases.
