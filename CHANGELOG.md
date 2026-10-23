@@ -4,6 +4,59 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [0.2.5] — 2026-10-23
+
+Repo completion — the open-source hygiene items the plan and compact.md
+have been tracking.
+
+### Added
+- **Full GPL-3.0 text** in `LICENSE` (34,674 bytes, SPDX's canonical
+  text — the stub it replaces was a placeholder; redistribution was
+  never legal without the actual license text attached).
+- **Gradle wrapper committed**: `gradlew`, `gradlew.bat`,
+  `gradle-wrapper.jar` (from gradle/gradle's v8.11.1 tag — matches the
+  8.11.1 pin in the properties file). Verified working end to end from
+  this repo state: `./gradlew --version` fetches 8.11.1 and runs. The
+  README's build instructions now match reality.
+- **Four unit-test suites** in `core:engine` (20 tests, all passing on
+  the JVM): the Jaro-Winkler port against Stario's documented oracle
+  scores; the AccentExtractor quantizer (monochrome null, the 0.92
+  near-white cutoff edge that bit authoring once already, weight-based
+  dominance, the dark-UI nudge); BatteryStatus's guarded percentage
+  math; and the category-UUID scheme against values computed
+  independently of the implementation.
+- **Inter variable font bundled** (`common/design/res/font/`, SIL OFL
+  — full text in the new `THIRD_PARTY_LICENSES.md`) and wired into
+  `Typography.kt` with real variable weights. SF Pro was never legally
+  bundlable; Inter was always the plan's stand-in, and now it's the
+  actual typeface, not `FontFamily.Default`.
+
+### Fixed
+- `gradle.properties` stale comments (compact.md flag #5): "Compose
+  Unstyled 2.0's modules" (there's one 1.49.1 artifact) and "Gradle
+  9.4+" (the wrapper pins 8.11.1) replaced with accurate ones.
+
+### Process note — CI not in this push
+CI is written (`.github/workflows/ci.yml`: JDK 17 Temurin, engine
+tests → `assembleDebug`, APK artifact, on pushes/tags/PRs) but **could
+not be pushed**: the authoring PAT lacks the `workflow` scope, and
+GitHub enforces that on every path — git push, the trees API, and the
+contents API all reject workflow files. Everything else in this
+version is published. To activate CI, add the file via the GitHub web
+UI (repo owner, no barrier) or grant the PAT workflow scope — it's
+~20 lines: checkout, setup-java 17, `chmod +x gradlew`, the two
+gradle tasks from the README's build block. No other claim in this
+entry depends on CI being live.
+
+### Process note
+The AccentExtractor weight-dominance test needed one authoring-round
+fix of its own: the first draft asserted a red that was too bright to
+survive the near-white cutoff (v = 1.0 > 0.92) would win — the exact
+same trap, same constant even, that the original 0.2.5 authoring round
+recorded. The algorithm was right both times; the test color wasn't.
+Kept honest here because a test that passes by accident is worse than
+no test.
+
 ## [0.2.4] — 2026-10-23
 
 Settings (plan §1's last unbuilt §1 surface) + the accent precedence fix

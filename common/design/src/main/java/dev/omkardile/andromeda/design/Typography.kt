@@ -1,23 +1,33 @@
 /*
- * A note before you drop real fonts in: Apple's SF Pro is licensed for use
- * in software built for Apple platforms — bundling the actual font files in
- * an Android APK sits outside that license. Inter (SIL Open Font License)
- * is the standard substitute the Android community reaches for when chasing
- * an "SF Pro" look — near-identical proportions, fully open for this. Drop
- * Inter's .ttf files in app/src/main/res/font/ and wire them into the
- * FontFamily below when you get to Phase 2's design pass. Left as the
- * system default here so this module compiles without any font assets.
+ * Inter (SIL Open Font License 1.1) is the app's typography — the
+ * standard open-licensed stand-in for Apple's SF Pro, whose license
+ * covers Apple platforms only and can't be bundled in an Android APK.
+ * Full license text: THIRD_PARTY_LICENSES.md at the repo root.
+ *
+ * The variable font is one resource covering the whole weight axis:
+ * each Font entry pins the weight it's matched against (Compose's
+ * Font() derives the wght variation settings from the weight by
+ * default), and TextStyle font weights resolve to real axis positions
+ * rather than synthetic bold. The three entries below are the weights
+ * this project's tokens actually use.
  */
 
 package dev.omkardile.andromeda.design
 
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import dev.omkardile.andromeda.design.R as DesignR
 
 object AndromedaType {
-    private val family = FontFamily.Default // swap for Inter once font assets exist
+
+    private val family = FontFamily(
+        Font(DesignR.font.inter_variable, weight = FontWeight.Normal),
+        Font(DesignR.font.inter_variable, weight = FontWeight.Medium),
+        Font(DesignR.font.inter_variable, weight = FontWeight.SemiBold),
+    )
 
     val Display = TextStyle(fontFamily = family, fontWeight = FontWeight.SemiBold, fontSize = 34.sp)
     val Title = TextStyle(fontFamily = family, fontWeight = FontWeight.SemiBold, fontSize = 22.sp)

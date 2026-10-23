@@ -1,6 +1,6 @@
 # Technical documentation
 
-How the Andromeda codebase is actually put together, as of **v0.2.0**
+How the Andromeda codebase is actually put together, as of **v0.2.5**
 (this file updates in the same commit as the code it describes — see
 `decisions.md` for the *why* behind choices, `compact.md` for a
 one-screen state snapshot). For product vision and the phase plan, read
@@ -99,9 +99,12 @@ part of the build at all — it's read-only porting material.
 - `Theme.kt` — the whole theming mechanism is one `CompositionLocal`
   (`LocalAndromedaColors`). No `MaterialTheme` anywhere, on purpose;
   screens read tokens directly.
-- `Typography.kt` / `Spacing.kt` — token sets. Typography currently
-  uses `FontFamily.Default`; the plan is an Inter (SIL OFL) swap for
-  the SF Pro look, since SF Pro itself is Apple-platform-licensed.
+- `Typography.kt` / `Spacing.kt` — token sets. Typography is the
+  **Inter variable font** (SIL OFL, `THIRD_PARTY_LICENSES.md` at the
+  repo root; the SF Pro stand-in the plan called for) wired with real
+  variable weights. `Spacing.kt` is the roomier-than-Material scale.
+- `Motion.kt` (0.2.0) — spring tokens (`snappy`/`gentle`/`entrance`).
+- `Drawables.kt` (0.2.0) — the shared `Drawable.toImageBitmapOrNull()`.
 - `res/` — the 8 launcher-icon mipmap sets live here (not in `app`)
   because resource references don't flow backward across module
   dependencies and both `app` and `ui:home` need them.
@@ -111,10 +114,12 @@ part of the build at all — it's read-only porting material.
 - **`ui:home`** — `HomeScreen.kt`: the real home screen (0.2.1) —
   localized clock (30s aligned tick), date, greeting, live app count,
   real-wallpaper Haze backdrop (striped fallback for live wallpapers),
-  accent applied one level up in MainActivity so all screens inherit it.
+  battery chip + settings gear (top-right glass), floating dock
+  (search pill + 2×2 apps button, haptic), accent applied one level up
+  in MainActivity so all screens inherit it.
   `BlurPocScreen.kt` (the Phase 2 Haze-vs-Cloudy comparison; hazeSource
   /hazeEffect must be *siblings*, not parent-child — that was the 0.1.5
-  bug), `IconPickerScreen.kt` (8-icon grid backed by `IconSwitcher`).
+  bug).
 - **`ui:search`** (0.2.2) — `SearchScreen.kt`: prefix-first ranking,
   then Jaro-Winkler ≥ 0.4 descending; browser handoff row; FocusRequester
   auto-focus; imePadding. API 29 edge documented in help.md.
@@ -158,16 +163,18 @@ part of the build at all — it's read-only porting material.
   what's confirmed vs best-effort.
 - Repos: `google()` + `mavenCentral()` + JitPack (Cloudy only), with
   `FAIL_ON_PROJECT_REPOS` so a stray module-level repo can't sneak in.
-- **`gradlew` / wrapper jar are not committed yet** (networkless origin
-  environment; see README's Building note). CI arrives with the wrapper
-  — until then "it compiles" is a claim reasoned from docs, not
-  machine-verified, and every version's CHANGELOG process note says so
-  explicitly when it applies.
+- **The Gradle wrapper is committed** (0.2.5, from gradle/gradle's
+  v8.11.1 tag) and **CI runs** (`.github/workflows/ci.yml`: JDK 17,
+  `:core:engine:testDebugUnitTest` → `:app:assembleDebug`, APK
+  artifact, on pushes/tags/PRs).
+- **Tests** (0.2.5): four JVM suites in `core:engine` (20 tests) —
+  JaroWinkler vs Stario's oracle, AccentExtractor edges, BatteryStatus
+  math, CategoryIds vs independently computed UUIDs.
 
 ## What's deliberately not built yet
 
-Floating search + dock search, contextual home, wallpaper-reactive
-accent, settings, tests, CI, real font, drag-scroll on the rail,
-adaptive-icon source art. Each has Stario reference source under
-`reference/stario-source/` waiting for its phase — see `compact.md`
+Usage-stats opt-in suggestions (plan §8 gate), drag-scroll on the rail,
+UI-layer automated tests, the performance pass, and real-device
+dogfooding (the plan's beta phase). Reference sources for the deferred
+bits are under `reference/stario-source/` — see `compact.md`
 for the live status board.

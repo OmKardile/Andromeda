@@ -92,46 +92,30 @@ cross-dependencies between `ui:*` modules.
 
 ## Building
 
-Needs **JDK 17** (Compose Unstyled requirement — set this in Android
-Studio's Gradle JDK setting if it doesn't pick it up automatically) and a
-recent Android Studio. As of 0.1.3 this targets **AGP 8.10.0 / Gradle
-8.11.1 / Kotlin 2.2.10 / compileSdk 36** — a Google-documented tested
-combination (Navigation SDK's compatibility table), not another guess. See
-CHANGELOG 0.1.3 for why compileSdk went back up to 36 after 0.1.1 dropped
-it to 34.
+Needs **JDK 17+** (set it in Android Studio's Gradle JDK setting, or
+`JAVA_HOME` on the CLI — JDK 21 works fine) and an Android SDK with
+`platforms;android-36` (Android Studio handles this on first sync).
+As of 0.1.3 this targets **AGP 8.10.0 / Gradle 8.11.1 / Kotlin 2.2.10 /
+compileSdk 36** — a Google-documented tested combination (Navigation
+SDK's compatibility table), not another guess. See CHANGELOG 0.1.3 for
+why compileSdk went back up to 36 after 0.1.1 dropped it to 34.
 
 ```
-git clone <your fork's URL>
-cd andromeda
-gradle wrapper --gradle-version 8.11.1   # see note below
-# then open in Android Studio
-# File ▸ Invalidate Caches / Restart before your first sync if you're
-# coming from a 0.1.0 or 0.1.1 checkout that already failed to sync once —
-# a failed dependency resolution can leave stale state that a plain sync
-# won't clear on its own
+git clone https://github.com/OmKardile/Andromeda.git
+cd Andromeda
+./gradlew :app:assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+# engine unit tests: ./gradlew :core:engine:testDebugUnitTest
 ```
 
-**One real gap:** `gradlew` / `gradlew.bat` / `gradle-wrapper.jar` aren't
-in this repo yet — the jar is a compiled binary this environment can't
-produce without network access. `gradle/wrapper/gradle-wrapper.properties`
-is here and correctly pins 8.11.1, so either run `gradle wrapper` once
-locally (needs *some* Gradle already on your machine) or use Android
-Studio's Gradle tool window → "Generate Gradle Wrapper" — either will
-read the properties file and fetch the right version.
+The Gradle wrapper is committed and pinned to 8.11.1 — a plain
+`./gradlew` is the whole setup. (CI is written but not yet active —
+the token that published this repo couldn't push workflow files; see
+CHANGELOG 0.2.5's process note.)
 
-**This still hasn't been through a live Gradle sync on my end** — written
-without network access, so nothing here has been compile-verified from
-this side. What's confirmed vs. best-effort:
+Version-pinning notes (the catalog, `gradle/libs.versions.toml`, records
+why per entry):
 
-- `agp`, `kotlin`, `composeBom`, `haze`, `cloudy`, and now `composeunstyled`
-  (as of 0.1.2 — see CHANGELOG) in `gradle/libs.versions.toml` are real,
-  checked values. Everything else marked `best-effort` in that file wasn't
-  individually re-confirmed.
-- Compose Unstyled is now a single `com.composables:compose-unstyled`
-  dependency rather than the modular per-component split 0.1.0/0.1.1
-  guessed at — check [composeunstyled.com/docs](https://composeunstyled.com/docs)
-  for whether that modular API is real and worth switching back to once
-  you're actually using components from it.
 - Haze's modifier API changed shape between 1.x and 2.0 — this project
   pins 1.7.2 (stable), whose `hazeEffect { }` sets properties like
   `blurRadius` directly, no wrapper. 2.0's migration docs show a nested
@@ -145,6 +129,11 @@ this side. What's confirmed vs. best-effort:
   adaptive-icon-compliant source art (full-bleed, no baked-in rounded
   frame) is the follow-up if they get more polish. See CHANGELOG 0.1.11
   for the reasoning.
+
+Everything above this note is machine-verified from 0.2.0 on (local SDK
+builds + the unit tests + CI on push); the 0.1.x-era caveats about
+compile-unverified claims live in those versions' CHANGELOG entries as
+written. Type is Inter (variable, SIL OFL — `THIRD_PARTY_LICENSES.md`).
 
 ## Documentation
 

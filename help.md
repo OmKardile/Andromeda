@@ -11,20 +11,21 @@ way lives in `decisions.md`; how it's wired lives in
 2. **Android SDK with `platforms;android-36` + build tools** (Android
    Studio handles this on first sync), and a `local.properties` with
    `sdk.dir=` — Studio writes that file for you; the CLI needs it too.
-3. **The Gradle wrapper is not committed yet** (as of 0.1.11 — the
-   environment that authored the early versions had no network, and the
-   wrapper jar is a binary it couldn't produce). The pinned version is
-   **8.11.1** in `gradle/wrapper/gradle-wrapper.properties`. Until the
-   wrapper lands: run `gradle wrapper --gradle-version 8.11.1` once
-   locally (needs any existing Gradle install), or use Android Studio's
-   Gradle tool window → *Generate Gradle Wrapper*.
+3. **The Gradle wrapper is committed** (0.2.5): `./gradlew` just works
+   and pins **8.11.1** — no pre-installed Gradle needed anymore. (For
+   history: 0.1.x-era checkouts genuinely did lack the wrapper —
+   `gradle wrapper --gradle-version 8.11.1` was the old workaround.)
 4. Build/install: `./gradlew :app:assembleDebug` then
    `adb install -r app/build/outputs/apk/debug/app-debug.apk` (or just
-   press Run in Studio). Make it your home screen via Settings → Apps →
-   Default apps → Home app → Andromeda. The system Home button switches
-   you back out at any time.
+   press Run in Studio). Tests: `./gradlew :core:engine:testDebugUnitTest`.
+   (CI is written but not pushed yet — the authoring token couldn't
+   publish workflow files; see CHANGELOG 0.2.5. Everything is verified
+   by the same commands locally instead.)
+5. Make it your home screen via Settings → Apps → Default apps → Home
+   app → Andromeda. The system Home button switches you back out at any
+   time.
 
-## Environment facts (as of 0.1.11)
+## Environment facts (as of 0.2.5)
 
 - AGP 8.10.0 / Gradle 8.11.1 / Kotlin 2.2.10 / compileSdk 36 /
   minSdk 29 — a Google-documented tested combination. Do not bump these
@@ -94,15 +95,23 @@ way lives in `decisions.md`; how it's wired lives in
 ## FAQ
 
 - **Can I use SF Pro?** Not as a bundled Android font — Apple's license
-  covers Apple platforms. Inter (SIL OFL) is the accepted stand-in;
-  it's not bundled yet (`Typography.kt` notes where it would go).
+  covers Apple platforms. Inter (SIL OFL) is the bundled stand-in since
+  0.2.5 (`THIRD_PARTY_LICENSES.md` has the license text).
 - **Where do alternate launcher icons come from?** Manifest
   `activity-alias` entries, declared at build time. Eight ship. Adding
   a ninth requires a new build — that's the platform's rule, not ours
   (see `IconSwitcher.kt`).
-- **Is there CI?** Not yet (0.1.11) — arrives with the wrapper in a
-  later version. Until then every "it compiles" claim in the CHANGELOG
-  carries an honest process note about how it was (or wasn't) verified.
+- **Is there CI?** Written, not yet active (0.2.5's process note): the
+  PAT that published the repo lacks `workflow` scope, and GitHub blocks
+  workflow files on every API for such tokens. Owner action to activate:
+  add `.github/workflows/ci.yml` via the web UI, or re-scope the PAT.
+  Its shape: checkout → setup-java 17 (Temurin) → `chmod +x gradlew` →
+  `:core:engine:testDebugUnitTest` → `:app:assembleDebug` → upload the
+  APK artifact.
+- **What's tested?** The engine's JVM-pure logic (20 tests): Jaro-Winkler
+  against Stario's oracle scores, the accent quantizer, battery math,
+  the category-UUID scheme. UI is verified by build + device use, not
+  automated tests (yet — UI-layer tests are deliberate backlog).
 - **Can I contribute proprietary launcher code I decompiled?** No —
   behavior reference only; reimplement in our Kotlin/Compose
   (`decisions.md`, 2026-10-20). Stario's GPL code is the only

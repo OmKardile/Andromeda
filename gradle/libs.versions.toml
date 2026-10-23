@@ -26,6 +26,7 @@ navigationCompose = "2.9.3"        # best-effort — androidx.navigation tends t
                                     # androidx.lifecycle's release train, which resolved to 2.9.4
                                     # per the actual 0.1.2 build log, so this is an educated guess
                                     # rather than a blind one, but still unverified
+junit = "4.13.2"                   # the standard runner; AGP's built-in test integration targets it
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,7 @@ cloudy = { group = "com.github.skydoves", name = "cloudy", version.ref = "cloudy
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coilCompose" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

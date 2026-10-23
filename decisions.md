@@ -185,6 +185,31 @@ would have violated the module rule the README already promised.
 of sections, split into routed sub-screens before it becomes a
 scroll-and-hunt list.
 
+## 2026-10-23 — 0.2.5: the verification line moves (mostly) to CI
+
+**Decision:** commit the wrapper from gradle/gradle's v8.11.1 tag, pin
+the GPL text from SPDX, bundle Inter under OFL with the license at
+the repo root, and ship the four engine test suites. CI is written
+but couldn't be pushed — the authoring PAT has no `workflow` scope,
+and GitHub enforces that on git push, the trees API, and the contents
+API alike (all three verified live); the file waits on owner action
+(web-UI add or PAT re-scope), documented in the CHANGELOG process
+note so the published repo makes no false CI claims.
+
+**Why:** the wrapper gap and GPL stub were the two blockers between this
+repo and legitimate open-source distribution — one meant nobody could
+build without pre-installed tooling, the other meant redistribution
+wasn't actually licensed. Tests land where the JVM can run them
+(core:engine, no device needed) and pin the ports to their oracles:
+JaroWinkler to Stario's documented scores, CategoryIds to UUIDs
+computed independently of the code (a reimplementation of the scheme
+can't validate itself). Every publishable verification step was
+published; the one that wasn't is named, not hidden.
+
+**What would change my mind:** nothing on this entry; the next line is
+device-level verification (dogfooding per the plan's beta phase) which
+no CI can substitute.
+
 ## 2026-10-23 — session 3: sandbox loss, full rebuild, push authorization
 
 **Decision:** after the sandbox that authored the 0.2.x line was

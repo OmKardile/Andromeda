@@ -23,4 +23,8 @@ android {
 dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.core.ktx)
+
+    // JVM-only unit tests (JaroWinkler oracle, AccentExtractor quantizer,
+    // BatteryStatus math, CategoryIds UUID scheme vs Stario).
+    testImplementation(libs.junit)
 }
