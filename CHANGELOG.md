@@ -4,6 +4,26 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [Unreleased]
+
+Documentation-and-process round — no app code changed.
+
+### Added
+- Onboarding doc set: `technical-documentation.md` (how the codebase is
+  actually put together), `decisions.md` (dated log of the *why* behind
+  non-obvious choices), `help.md` (build setup, FAQ, traps already hit),
+  `compact.md` (one-screen state snapshot), plus this CHANGELOG's
+  [Unreleased] section itself and a Documentation index in the README.
+- Retroactive git tags for the versions that predate this repo's git
+  history granularity: `v0.1.8` (initial push commit) and `v0.1.11`.
+
+### Removed
+- `business-documentation.md` — created in a local-only session and
+  removed before anything was ever published: the project is going open
+  source, and its content (licensing posture, privacy posture) is either
+  already covered by the plan doc and README or not appropriate for a
+  public repo. Never existed in any published commit.
+
 ## [0.1.11] — 2026-08-17
 
 Real alternate-app-icon picker (plan §10) — 8 switchable icons, working

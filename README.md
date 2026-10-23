@@ -33,7 +33,9 @@ this file is the practical "how do I build this" companion to that plan.
   alphabetized app drawer with a Niagara-style A–Z quick-scroll rail
   (`ui:drawer`), and the Phase 2 Haze-vs-Cloudy blur comparison screen —
   Haze confirmed actually working on real hardware, not just compiling
-- Real Compose Navigation between all three screens — no more placeholder
+- A real app-icon picker — 8 switchable launcher icons via activity-alias
+  (0.1.11, plan §10)
+- Real Compose Navigation between all four screens — no more placeholder
   toggles
 
 What's **not** here yet, deliberately — see the plan's §3 Gantt for when:
@@ -47,12 +49,12 @@ to port properly when their phase comes up instead of being rushed here.
 
 ```
 app/            The launcher application — MainActivity (NavHost across
-                home/drawer/blur-poc), manifest, icon.
+                home/drawer/blur-poc/icon-picker), manifest, icon.
 core/engine/    App indexing + icon loading (LauncherApps-based). No
                 Compose dependency — pure Kotlin/Java, testable without a UI.
 common/design/  Colors, spacing, typography, the AndromedaTheme
                 CompositionLocal. No Material.
-ui/home/        Home screen + the Haze/Cloudy blur POC. Depends on
+ui/home/        Home screen, blur POC, app-icon picker. Depends on
                 core:engine and common:design.
 ui/drawer/      The real app drawer — alphabetized list, quick-scroll rail,
                 tap-to-launch. Same dependency shape as ui:home.
@@ -61,7 +63,7 @@ reference/      Curated real Stario source (not part of the Gradle build —
                 during later phases.
 ```
 
-Future UI modules (`ui:search`, `ui:folders`, etc.) should follow
+Future UI modules (`ui:search`, `ui:settings`, etc.) should follow
 `ui:home`/`ui:drawer`'s shape: depend on `core:engine` + `common:design`,
 own their package under `dev.omkardile.andromeda.ui.*`, no
 cross-dependencies between `ui:*` modules.
@@ -116,14 +118,30 @@ this side. What's confirmed vs. best-effort:
 - Cloudy's classic `Modifier.cloudy(radius)` blur (used in the POC screen)
   is stable; its newer liquid-glass-specific API wasn't confirmed — see
   `BlurPocScreen.kt`'s header comment.
-- No launcher icon artwork — `ic_launcher_foreground.xml` is a placeholder
-  vector (a circle and a ring). Real icon design is the single
-  highest-impact "this is mine now" item per the plan's §10.
+- Launcher icon **artwork design pass** — 8 real switchable icons ship
+  (0.1.11), but they're legacy (non-adaptive) resources; true
+  adaptive-icon-compliant source art (full-bleed, no baked-in rounded
+  frame) is the follow-up if they get more polish. See CHANGELOG 0.1.11
+  for the reasoning.
 
-**If Gradle sync still fails after pulling in 0.1.1's changes**, that's
-genuinely useful signal (it would mean the AGP 9.x theory in CHANGELOG
-0.1.1 was wrong) — paste the new error and it's a much narrower search
-than "why does 9.3.0 not work."
+## Documentation
+
+Beyond this README, the repo carries a small onboarding doc set — all
+factual, all dated, no overlap by design:
+
+- [`CHANGELOG.md`](./CHANGELOG.md) — per-version history, including honest
+  process notes when something went sideways
+- [`technical-documentation.md`](./technical-documentation.md) — how the
+  codebase is actually put together (modules, data flow, build config)
+- [`decisions.md`](./decisions.md) — dated log of the *why* behind
+  non-obvious choices, so future-you doesn't relitigate them
+- [`help.md`](./help.md) — build setup, FAQ, and the traps this project
+  has already hit (with the fix for each)
+- [`compact.md`](./compact.md) — one-screen state snapshot: what exists,
+  what's flagged, where to look next
+
+The full background plan lives in
+[`Launcher_Plan_Stario_Fork_Refreshed_Aug2026.md`](./Launcher_Plan_Stario_Fork_Refreshed_Aug2026.md).
 
 ## Testing "is this actually my home screen"
 
