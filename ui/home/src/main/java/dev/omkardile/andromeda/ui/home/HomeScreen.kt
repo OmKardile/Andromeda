@@ -20,6 +20,10 @@
  * shape Stario's drawer-open control used). No Material icons; both
  * glyphs are drawn.
  *
+ * 0.2.3: haptic feedback on dock taps (Vibrations — Stario's 5ms
+ * one-shot, ported) and a battery chip (top-right) off the sticky
+ * ACTION_BATTERY_CHANGED broadcast.
+ *
  * No MaterialTheme/Text here on purpose — BasicText + this module's own
  * TextStyle tokens, per the "no Material UI" requirement.
  */
@@ -60,11 +64,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.omkardile.andromeda.core.engine.AppRepository
+import dev.omkardile.andromeda.core.engine.BatteryStatus
+import dev.omkardile.andromeda.core.engine.Vibrations
 import dev.omkardile.andromeda.core.engine.WallpaperRepository
 import dev.omkardile.andromeda.design.AndromedaSpacing
 import dev.omkardile.andromeda.design.AndromedaType
@@ -88,6 +95,8 @@ fun HomeScreen(
     val wallpaper by wallpaperRepository.wallpaper.collectAsState()
     val colors = LocalAndromedaColors.current
     val hazeState = remember { HazeState() }
+    val context = LocalContext.current
+    val battery = remember { BatteryStatus.read(context) }
 
     val time by rememberTick()
 
@@ -147,6 +156,30 @@ fun HomeScreen(
             )
         }
 
+        // Battery chip (0.2.3) — top-right, glass over the wallpaper.
+        battery?.let { status ->
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = AndromedaSpacing.lg, end = AndromedaSpacing.lg)
+                    .clip(RoundedCornerShape(16.dp))
+                    .hazeEffect(state = hazeState) {
+                        blurRadius = 16.dp
+                    }
+                    .padding(horizontal = AndromedaSpacing.md, vertical = AndromedaSpacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (status.isCharging) {
+                    BoltGlyph(color = colors.accent)
+                    Spacer(Modifier.width(AndromedaSpacing.xs))
+                }
+                BasicText(
+                    text = "${status.percentage}%",
+                    style = AndromedaType.Label.copy(color = colors.onSurface),
+                )
+            }
+        }
+
         // Layer 3 — the floating dock (0.2.2): Haze-blurred search pill +
         // Canvas-drawn 2×2 apps button. Sibling of the source layer.
         Row(
@@ -165,7 +198,10 @@ fun HomeScreen(
                     .hazeEffect(state = hazeState) {
                         blurRadius = 24.dp
                     }
-                    .clickable(onClick = onOpenSearch)
+                    .clickable(onClick = {
+                        Vibrations.vibrate(context)
+                        onOpenSearch()
+                    })
                     .padding(horizontal = AndromedaSpacing.md),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -185,7 +221,10 @@ fun HomeScreen(
                     .hazeEffect(state = hazeState) {
                         blurRadius = 24.dp
                     }
-                    .clickable(onClick = onOpenDrawer),
+                    .clickable(onClick = {
+                        Vibrations.vibrate(context)
+                        onOpenDrawer()
+                    }),
                 contentAlignment = Alignment.Center,
             ) {
                 AppsGridGlyph(color = colors.onSurface)
@@ -240,6 +279,25 @@ private fun AppsGridGlyph(color: Color, modifier: Modifier = Modifier) {
                 cornerRadius = CornerRadius(radius, radius),
             )
         }
+    }
+}
+
+/** Charging bolt — a filled, slightly-slanted hexagon-ish stroke. */
+@Composable
+private fun BoltGlyph(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(12.dp)) {
+        val w = size.width
+        val h = size.height
+        val path = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.62f, 0f)
+            lineTo(w * 0.18f, h * 0.58f)
+            lineTo(w * 0.46f, h * 0.58f)
+            lineTo(w * 0.38f, h)
+            lineTo(w * 0.82f, h * 0.42f)
+            lineTo(w * 0.54f, h * 0.42f)
+            close()
+        }
+        drawPath(path, color = color)
     }
 }
 

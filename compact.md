@@ -10,19 +10,19 @@ Andromeda: Android launcher, GPL-3.0 fork/rebuild of archived Stario
 v2.16. Kotlin + Compose, no Material, Haze + Cloudy blurs, Niagara/iOS
 inspiration. Product plan: `Launcher_Plan_Stario_Fork_Refreshed_Aug2026.md`.
 
-## State (as of v0.2.2, 2026-10-23)
+## State (as of v0.2.3, 2026-10-23)
 
-- Version: **0.2.2** (versionCode 15). Tags: v0.1.8 @ f7e590c,
-  v0.1.11 @ e8cd3d0 (retro), v0.2.0–v0.2.2 on their own commits.
+- Version: **0.2.3** (versionCode 16). Tags: v0.1.8 @ f7e590c,
+  v0.1.11 @ e8cd3d0 (retro), v0.2.0–v0.2.3 on their own commits.
 - Built: engine (indexing, icons, icon-switching, categories, hidden
-  apps, wallpaper + accent extraction, search: Jaro-Winkler + engines),
-  design tokens + motion, home (clock/date/greeting, wallpaper
-  backdrop + accent, floating dock w/ search pill + 2×2 apps button),
-  drawer, App Library folder grid, floating search, blur POC, 8
-  switchable icons, 6-route navigation.
-- Not built (deliberately): contextual home, settings, tests, CI, real
-  font, drag-scroll rail. Stario reference sources in
-  `reference/stario-source/`.
+  apps, wallpaper + accent extraction, search: Jaro-Winkler + engines,
+  Vibrations, BatteryStatus), design tokens + motion, home
+  (clock/date/greeting/battery chip, wallpaper backdrop + accent,
+  floating dock w/ haptics), drawer, App Library folder grid, floating
+  search, blur POC, 8 switchable icons, 6-route navigation.
+- Not built (deliberately): contextual home (usage-stats deferred —
+  plan §8 opt-in gate), settings, tests, CI, real font, drag-scroll
+  rail. Stario reference sources in `reference/stario-source/`.
 - Tracker: 0 issues, 0 PRs (open or closed, ever). No TODO/FIXME in
   our code (one in reference/, Stario's own).
 - **Compile status: verified from 0.2.0 on** (real SDK + Gradle 8.11.1

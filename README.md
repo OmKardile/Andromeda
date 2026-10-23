@@ -42,12 +42,16 @@ this file is the practical "how do I build this" companion to that plan.
   Canvas-drawn 2×2 apps button; searching ranks installed apps
   (prefix-first, then Jaro-Winkler — Stario's algorithm, ported) with
   browser handoff to the active engine (default Kagi)
+- A battery chip with charging indicator (0.2.3) and Stario's exact
+  haptic profile (5ms one-shot, preference-gated) on dock/folder/search
+  taps
 - Real Compose Navigation between all six screens (home, drawer, App
   Library, search, blur POC, icon picker) — no more placeholder toggles
 
 What's **not** here yet, deliberately — see the plan's §3 Gantt for when:
-contextual home features, drag-to-scroll on the quick-scroll rail, and
-settings.
+contextual home features (usage-stats suggestions are opt-in-gated per
+plan §8 and wait for a real opt-in flow), drag-to-scroll on the
+quick-scroll rail, and settings.
 `reference/stario-source/` has Stario's real code for all of these, ready
 to port properly when their phase comes up instead of being rushed here.
 

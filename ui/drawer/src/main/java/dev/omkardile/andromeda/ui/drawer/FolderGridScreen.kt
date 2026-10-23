@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
 import dev.chrisbanes.haze.HazeState
@@ -68,6 +69,7 @@ import dev.omkardile.andromeda.core.engine.AppCategory
 import dev.omkardile.andromeda.core.engine.AppRepository
 import dev.omkardile.andromeda.core.engine.CategoryRepository
 import dev.omkardile.andromeda.core.engine.LauncherApplication
+import dev.omkardile.andromeda.core.engine.Vibrations
 import dev.omkardile.andromeda.design.AndromedaMotion
 import dev.omkardile.andromeda.design.AndromedaSpacing
 import dev.omkardile.andromeda.design.AndromedaType
@@ -84,6 +86,7 @@ fun FolderGridScreen(
     val categories by categoryRepository.categories.collectAsState()
     val hazeState = remember { HazeState() }
     var selected by remember { mutableStateOf<AppCategory?>(null) }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -118,7 +121,13 @@ fun FolderGridScreen(
                     items = categories,
                     key = { it.identifier.toString() },
                 ) { category ->
-                    CategoryCard(category = category, onClick = { selected = category })
+                    CategoryCard(
+                        category = category,
+                        onClick = {
+                            Vibrations.vibrate(context)
+                            selected = category
+                        },
+                    )
                 }
             }
         }
@@ -127,7 +136,10 @@ fun FolderGridScreen(
             FolderDetailOverlay(
                 category = category,
                 hazeState = hazeState,
-                onLaunch = { app -> appRepository.launch(app) },
+                onLaunch = { app ->
+                    Vibrations.vibrate(context)
+                    appRepository.launch(app)
+                },
                 onMove = { from, to -> categoryRepository.moveApp(category.identifier, from, to) },
                 onDismiss = { selected = null },
             )

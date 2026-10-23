@@ -4,6 +4,36 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [0.2.3] — 2026-10-23
+
+Feedback & status (the plan §1 "spring physics/feel" slice that doesn't
+need a device to verify).
+
+### Added
+- **`core:engine`'s `Vibrations.kt`** — direct port of Stario's
+  `preferences/Vibrations.java`: the 5ms one-shot at default amplitude,
+  preference-gated (default ON). `VibratorManager.defaultVibrator` on
+  API 31+ with the legacy `VIBRATOR_SERVICE` path for the 29–30 floor;
+  no singleton coupling (plain object, Context in, pref read per call —
+  SharedPreferences caches in memory, so it's free).
+- **Haptics applied** to the real tap points: dock search pill + 2×2
+  apps button, folder cards and folder-detail launches, search result
+  and web-fallback rows.
+- **`core:engine`'s `BatteryStatus.kt`** — sticky
+  `ACTION_BATTERY_CHANGED` read via `registerReceiver(null, …)` (the
+  sanctioned no-registration, no-permission pattern), pure
+  level/scale/charging triple + guarded percentage math (the JVM-tested
+  part).
+- **Battery chip on the home screen** — top-right Haze-blurred glass
+  chip; a Canvas-drawn charging bolt appears in the accent color while
+  charging.
+
+### Deliberately not built
+- Usage-stats-based suggestions (the remaining "contextual home" item):
+  opt-in-only permission territory per plan §8 — deferred until there's
+  a real opt-in flow to put it behind, not smuggled in on a status-chip
+  release.
+
 ## [0.2.2] — 2026-10-23
 
 Floating search + the real dock (plan §1, High priority).

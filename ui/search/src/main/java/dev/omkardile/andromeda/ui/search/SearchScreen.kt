@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import dev.omkardile.andromeda.core.engine.AppRepository
 import dev.omkardile.andromeda.core.engine.HiddenAppsRepository
 import dev.omkardile.andromeda.core.engine.LauncherApplication
+import dev.omkardile.andromeda.core.engine.Vibrations
 import dev.omkardile.andromeda.core.engine.search.JaroWinkler
 import dev.omkardile.andromeda.core.engine.search.SearchEngines
 import dev.omkardile.andromeda.design.AndromedaSpacing
@@ -151,7 +152,13 @@ fun SearchScreen(
                 .padding(horizontal = AndromedaSpacing.lg),
         ) {
             results.forEach { (app, _) ->
-                AppResultRow(app = app, onClick = { appRepository.launch(app) })
+                AppResultRow(
+                    app = app,
+                    onClick = {
+                        Vibrations.vibrate(context)
+                        appRepository.launch(app)
+                    },
+                )
                 Spacer(Modifier.height(AndromedaSpacing.xs))
             }
 
@@ -160,6 +167,7 @@ fun SearchScreen(
                     engine = engine,
                     query = trimmed,
                     onClick = {
+                        Vibrations.vibrate(context)
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(engine.queryUrl(trimmed)))
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         runCatching { context.startActivity(intent) }

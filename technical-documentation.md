@@ -83,6 +83,11 @@ part of the build at all — it's read-only porting material.
   Stario's similarity algorithm and engine templates, ported exactly
   (oracle scores pinned by unit test; query URLs byte-identical;
   default engine: Kagi).
+- **`Vibrations.kt`** (0.2.3) — Stario's 5ms one-shot haptic, ported;
+  VibratorManager on 31+, legacy path for 29–30; pref-gated (default
+  ON), pref shared with SettingsRepository by design.
+- **`BatteryStatus.kt`** (0.2.3) — sticky-broadcast read (null-receiver
+  pattern) + pure level/scale/charging triple; guarded percentage.
 
 ## common:design
 

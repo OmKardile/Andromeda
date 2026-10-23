@@ -145,6 +145,25 @@ in practice (no in-app results page), Stario's `SearchFragment` +
 `WebAdapter` remain in reference/ as the blueprint for a Compose
 results screen.
 
+## 2026-10-23 — 0.2.3: haptics port, and what didn't come with it
+
+**Decision:** port Stario's Vibrations as-is (5ms one-shot, default-on
+pref) and wire it into the real taps; add a battery chip; defer
+usage-stats suggestions entirely.
+
+**Why:** the 5ms one-shot is a tuned feel, not an arbitrary constant —
+ports of feel should keep the feel. The battery chip's read pattern
+(`registerReceiver(null, …)`) is the platform's no-lifetime-management
+answer for sticky broadcasts. Usage-stats suggestions are the one
+"contextual home" item gated behind explicit user opt-in by plan §8 —
+adding the permission flow without the settings surface to explain it
+would be exactly the smuggled-consent pattern the plan warns about, so
+it waits for a real opt-in UI.
+
+**What would change my mind:** nothing on haptics (the settings toggle
+arrives in 0.2.4 sharing the same pref file/key); the usage-stats deferral
+lifts when the settings round grows its privacy section.
+
 ## 2026-10-23 — session 3: sandbox loss, full rebuild, push authorization
 
 **Decision:** after the sandbox that authored the 0.2.x line was
