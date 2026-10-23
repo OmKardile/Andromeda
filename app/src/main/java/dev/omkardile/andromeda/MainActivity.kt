@@ -24,11 +24,13 @@ import dev.omkardile.andromeda.ui.drawer.FolderGridScreen
 import dev.omkardile.andromeda.ui.home.BlurPocScreen
 import dev.omkardile.andromeda.ui.home.HomeScreen
 import dev.omkardile.andromeda.ui.home.IconPickerScreen
+import dev.omkardile.andromeda.ui.search.SearchScreen
 
 private object Routes {
     const val HOME = "home"
     const val DRAWER = "drawer"
     const val FOLDERS = "folders"
+    const val SEARCH = "search"
     const val BLUR_POC = "blur_poc"
     const val ICON_PICKER = "icon_picker"
 }
@@ -78,6 +80,7 @@ class MainActivity : ComponentActivity() {
                             appRepository = appRepository,
                             wallpaperRepository = wallpaperRepository,
                             onOpenDrawer = { navController.navigate(Routes.DRAWER) },
+                            onOpenSearch = { navController.navigate(Routes.SEARCH) },
                             onOpenBlurPoc = { navController.navigate(Routes.BLUR_POC) },
                             onOpenIconPicker = { navController.navigate(Routes.ICON_PICKER) },
                         )
@@ -94,6 +97,13 @@ class MainActivity : ComponentActivity() {
                         FolderGridScreen(
                             appRepository = appRepository,
                             categoryRepository = categoryRepository,
+                            onBack = { navController.popBackStack() },
+                        )
+                    }
+                    composable(Routes.SEARCH) {
+                        SearchScreen(
+                            appRepository = appRepository,
+                            hiddenAppsRepository = hiddenAppsRepository,
                             onBack = { navController.popBackStack() },
                         )
                     }

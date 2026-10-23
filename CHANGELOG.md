@@ -4,6 +4,39 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [0.2.2] — 2026-10-23
+
+Floating search + the real dock (plan §1, High priority).
+
+### Added
+- **`core:engine`'s `search/JaroWinkler.kt`** — direct port of Stario's
+  `JaroWinklerDistance.java` (itself Apache Commons Lang 3.3 lineage;
+  attribution retained in-file). Semantics preserved exactly — rounding,
+  null-argument exception — because Stario's documented example scores
+  are the unit-test oracle for the port.
+- **`core:engine`'s `search/SearchEngines.kt`** — direct port of
+  Stario's `SearchEngine.java`: same ten engines, query templates
+  byte-identical (a query built here lands on the same URL the original
+  would build). Two deliberate deviations: default is **Kagi** (plan
+  §1/§8), and Stario's icon drawables + in-app results pref branch are
+  out (this UI hands off to the browser; the icons become text rows).
+- **New `ui:search` module.** `SearchScreen.kt`: prefix-first ranking
+  (alphabetical starts-with first, then Jaro-Winkler similarity ≥ 0.4,
+  descending) over the hidden-filtered app list, a browser-handoff row
+  for the active engine, auto-focus via `FocusRequester`, `imePadding`
+  so results clear the keyboard. No Material — foundation's
+  `BasicTextField` + own tokens.
+- **Dock redesign** (`HomeScreen.kt`) — the real floating dock: a
+  Haze-blurred search pill plus a Canvas-drawn 2×2 apps button (both
+  glyphs drawn, no icon fonts — keeping the no-Material line honest).
+  Tapping the pill opens search; the 2×2 opens the drawer.
+
+### Known edge (documented, not fixed)
+- `imePadding` relies on `WindowInsets.IME`, which behaves from API 30;
+  on the API 29 floor with the manifest's `adjustNothing` the keyboard
+  can cover the last result row. The launcher's edge-to-edge posture is
+  worth more than that row on a 7-year-old device.
+
 ## [0.2.1] — 2026-10-23
 
 The home screen becomes a real home screen (plan §1: clock, wallpaper-

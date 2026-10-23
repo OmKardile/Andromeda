@@ -124,6 +124,27 @@ too noisy across wallpaper types, gate it behind a settings toggle
 (the settings round is 0.2.4) or blend with the system's
 `WallpaperColors` primary.
 
+## 2026-10-23 — 0.2.2: search porting fidelity, and drawn glyphs
+
+**Decision:** port Jaro-Winkler and the search engines *exactly* (same
+scores, same query templates), while skipping Stario's icon drawables
+and in-app-results branch. Draw the dock glyphs with Canvas instead of
+pulling an icon library.
+
+**Why:** ranking behavior and query URLs are the compatibility surface
+of search — byte-identical templates mean muscle memory and Stario-
+era habits carry over, and the oracle scores pin the port in tests.
+Icons and in-app results are presentation, and presentation is exactly
+what this fork reimagines (text rows; browser handoff instead of a
+webview results page). Icons libraries (Material or otherwise) would
+betray the no-Material stance for two primitives that take six lines of
+Canvas each.
+
+**What would change my mind:** if the browser handoff feels too lossy
+in practice (no in-app results page), Stario's `SearchFragment` +
+`WebAdapter` remain in reference/ as the blueprint for a Compose
+results screen.
+
 ## 2026-10-23 — session 3: sandbox loss, full rebuild, push authorization
 
 **Decision:** after the sandbox that authored the 0.2.x line was

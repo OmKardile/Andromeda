@@ -15,6 +15,11 @@
  * feeds it into AndromedaTheme, so every screen inherits it — this
  * screen just reads the theme.
  *
+ * 0.2.2: the dock is now the real floating dock shape (plan §1) — a
+ * Haze-blurred search pill plus a Canvas-drawn 2×2 apps button (the
+ * shape Stario's drawer-open control used). No Material icons; both
+ * glyphs are drawn.
+ *
  * No MaterialTheme/Text here on purpose — BasicText + this module's own
  * TextStyle tokens, per the "no Material UI" requirement.
  */
@@ -27,11 +32,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -44,9 +52,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -69,6 +80,7 @@ fun HomeScreen(
     appRepository: AppRepository,
     wallpaperRepository: WallpaperRepository,
     onOpenDrawer: () -> Unit,
+    onOpenSearch: () -> Unit,
     onOpenBlurPoc: () -> Unit,
     onOpenIconPicker: () -> Unit,
 ) {
@@ -135,20 +147,99 @@ fun HomeScreen(
             )
         }
 
-        // Layer 3 — dock. Tap opens the real app drawer (ui:drawer).
-        // The real floating search/dock look (plan §1) is the next pass.
-        Box(
+        // Layer 3 — the floating dock (0.2.2): Haze-blurred search pill +
+        // Canvas-drawn 2×2 apps button. Sibling of the source layer.
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = AndromedaSpacing.xl)
-                .fillMaxWidth(0.85f)
-                .height(72.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .hazeEffect(state = hazeState) {
-                    blurRadius = 24.dp
-                }
-                .clickable(onClick = onOpenDrawer),
+                .fillMaxWidth(0.92f)
+                .height(72.dp),
+            horizontalArrangement = Arrangement.spacedBy(AndromedaSpacing.sm),
+        ) {
+            // Search pill — opens the floating search (ui:search).
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(28.dp))
+                    .hazeEffect(state = hazeState) {
+                        blurRadius = 24.dp
+                    }
+                    .clickable(onClick = onOpenSearch)
+                    .padding(horizontal = AndromedaSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                MagnifierGlyph(color = colors.onSurfaceMuted)
+                Spacer(Modifier.width(AndromedaSpacing.sm))
+                BasicText(
+                    text = "Search",
+                    style = AndromedaType.Body.copy(color = colors.onSurfaceMuted),
+                )
+            }
+
+            // Apps button — 2×2 rounded squares, the drawer/dock glyph.
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .hazeEffect(state = hazeState) {
+                        blurRadius = 24.dp
+                    }
+                    .clickable(onClick = onOpenDrawer),
+                contentAlignment = Alignment.Center,
+            ) {
+                AppsGridGlyph(color = colors.onSurface)
+            }
+        }
+    }
+}
+
+/** Magnifier glyph — a stroked circle with a diagonal handle. Drawn, not
+ *  an icon font: no Material, and a vector res per glyph would bloat the
+ *  design module for two primitives. */
+@Composable
+private fun MagnifierGlyph(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(20.dp)) {
+        val stroke = 2.dp.toPx()
+        val lensRadius = (size.minDimension - stroke) / 2.6f
+        val center = Offset(size.width * 0.42f, size.height * 0.42f)
+        drawCircle(
+            color = color,
+            radius = lensRadius,
+            center = center,
+            style = Stroke(width = stroke),
         )
+        drawLine(
+            color = color,
+            strokeWidth = stroke,
+            start = Offset(center.x + lensRadius * 0.72f, center.y + lensRadius * 0.72f),
+            end = Offset(size.width - stroke, size.height - stroke),
+            cap = StrokeCap.Round,
+        )
+    }
+}
+
+/** The 2×2 apps grid glyph — four rounded squares. */
+@Composable
+private fun AppsGridGlyph(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(28.dp)) {
+        val gap = 3.dp.toPx()
+        val radius = 2.5.dp.toPx()
+        val cell = (size.minDimension - gap) / 2f
+        val origins = listOf(
+            Offset(0f, 0f),
+            Offset(cell + gap, 0f),
+            Offset(0f, cell + gap),
+            Offset(cell + gap, cell + gap),
+        )
+        origins.forEach { origin ->
+            drawRoundRect(
+                color = color,
+                topLeft = origin,
+                size = Size(cell, cell),
+                cornerRadius = CornerRadius(radius, radius),
+            )
+        }
     }
 }
 

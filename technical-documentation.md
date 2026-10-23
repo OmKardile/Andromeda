@@ -79,6 +79,10 @@ part of the build at all — it's read-only porting material.
 - **`AccentExtractor.kt`** (0.2.1) — pure-Kotlin accent quantizer
   (12 hue buckets, s²·v weights, monochrome → null, dark-UI nudge);
   the bitmap wrapper samples to ~192px first.
+- **`search/JaroWinkler.kt` + `search/SearchEngines.kt`** (0.2.2) —
+  Stario's similarity algorithm and engine templates, ported exactly
+  (oracle scores pinned by unit test; query URLs byte-identical;
+  default engine: Kagi).
 
 ## common:design
 
@@ -104,6 +108,9 @@ part of the build at all — it's read-only porting material.
   `BlurPocScreen.kt` (the Phase 2 Haze-vs-Cloudy comparison; hazeSource
   /hazeEffect must be *siblings*, not parent-child — that was the 0.1.5
   bug), `IconPickerScreen.kt` (8-icon grid backed by `IconSwitcher`).
+- **`ui:search`** (0.2.2) — `SearchScreen.kt`: prefix-first ranking,
+  then Jaro-Winkler ≥ 0.4 descending; browser handoff row; FocusRequester
+  auto-focus; imePadding. API 29 edge documented in help.md.
 - **`ui:drawer`** — `DrawerScreen.kt`: `LazyColumn` with letter header
   items (plain items since 0.2.0 — `stickyHeader` no longer exists in
   the resolved foundation; see CHANGELOG), tap-to-launch rows with real

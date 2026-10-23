@@ -18,7 +18,7 @@ this file is the practical "how do I build this" companion to that plan.
 
 ## Status
 
-**Phase 3 substantially done — real home screen, drawer, and App Library.** What's here:
+**Phase 3 substantially done — real home screen, drawer, App Library, and search.** What's here:
 
 - A buildable multi-module Gradle project with the real dependency stack
   wired up (Compose Unstyled, Haze, Cloudy, JitPack repo for Cloudy)
@@ -38,13 +38,16 @@ this file is the practical "how do I build this" companion to that plan.
 - A real home screen: localized clock/date/greeting over the **actual
   system wallpaper** as a Haze backdrop, with a wallpaper-derived accent
   color applied app-wide (0.2.1)
-- Real Compose Navigation between all five screens (home, drawer, App
-  Library, blur POC, icon picker) — no more placeholder toggles
+- The floating dock + search (0.2.2): Haze-blurred search pill and
+  Canvas-drawn 2×2 apps button; searching ranks installed apps
+  (prefix-first, then Jaro-Winkler — Stario's algorithm, ported) with
+  browser handoff to the active engine (default Kagi)
+- Real Compose Navigation between all six screens (home, drawer, App
+  Library, search, blur POC, icon picker) — no more placeholder toggles
 
 What's **not** here yet, deliberately — see the plan's §3 Gantt for when:
-floating search/dock (the dock currently just opens the drawer — no
-search yet), contextual home features, drag-to-scroll on the quick-scroll
-rail, and settings.
+contextual home features, drag-to-scroll on the quick-scroll rail, and
+settings.
 `reference/stario-source/` has Stario's real code for all of these, ready
 to port properly when their phase comes up instead of being rushed here.
 
@@ -64,6 +67,9 @@ ui/drawer/      The app drawer (alphabetized list, quick-scroll rail,
                 (FolderGridScreen: Cloudy cards, Haze detail scrim,
                 spring entrance, long-press-to-move reorder). Same
                 dependency shape as ui:home.
+ui/search/      The floating search — prefix-first + Jaro-Winkler app
+                ranking, browser-handoff web fallback. Same dependency
+                shape as ui:home.
 reference/      Curated real Stario source (not part of the Gradle build —
                 see reference/stario-source/README.md) for porting from
                 during later phases.

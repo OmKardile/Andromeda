@@ -69,6 +69,11 @@ way lives in `decisions.md`; how it's wired lives in
   33, removed from the API 36 SDK — it doesn't compile against
   `platforms;android-36`. Use `WallpaperManager
   .addOnColorsChangedListener` (see WallpaperRepository.start).
+- **`imePadding` is degraded on API 29** (0.2.2): `WindowInsets.IME`
+  behaves from API 30; with the manifest's `adjustNothing` on a 29
+  device the keyboard can cover the last search row. Edge case, not
+  worth breaking edge-to-edge over — it's in the CHANGELOG as a known
+  edge.
 - **`weight()` is scope-scoped** (0.1.4): importing
   `androidx.compose.foundation.layout.weight` explicitly resolves to the
   wrong symbol and shadows the Row/Column one. Don't import it; it's

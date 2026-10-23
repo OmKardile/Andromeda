@@ -15,8 +15,8 @@ android {
         // guessed at. See plan doc §7 for the low-end fallback notes this implies.
         minSdk = 29
         targetSdk = 36
-        versionCode = 14
-        versionName = "0.2.1"
+        versionCode = 15
+        versionName = "0.2.2"
     }
 
     buildTypes {
@@ -44,6 +44,7 @@ dependencies {
     implementation(project(":common:design"))
     implementation(project(":ui:home"))
     implementation(project(":ui:drawer"))
+    implementation(project(":ui:search"))
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
