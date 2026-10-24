@@ -4,6 +4,43 @@ All notable changes to this project. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions match
 `app/build.gradle.kts`' `versionName`.
 
+## [0.2.6] — 2026-10-24
+
+Build tooling release — no app code changed, the APK is byte-for-byte
+the same feature set as 0.2.5 (only `versionName` differs). Everything
+here exists so "get the latest and build an APK" is one command.
+
+### Added
+- **`build-apk.bat`** — the one-command Windows path: `git pull --ff-only`
+  → `gradlew assembleDebug` → copy to `apk\Andromeda-<version>-debug.apk`
+  → open the folder. Modes: `release` (signed when a keystore exists),
+  `install` (debug + `adb install -r` to a connected device, adb
+  auto-discovered from Android Studio's default SDK locations), `nopull`
+  (offline/local edits), `clean`. Written with CRLF endings enforced via
+  `.gitattributes` (`*.bat text eol=crlf`) — LF-only batch files can
+  break `goto`/`call` label parsing, so the attribute protects against
+  autocrlf-off clones.
+- **`build-apk.sh`** — the macOS/Linux/CI mirror of the same flow (same
+  argument surface, `./gradlew` instead of `gradlew.bat`).
+- **Opt-in release signing**: `app/build.gradle.kts` reads a
+  gitignored `keystore.properties` (template +
+  `keytool` one-liner in `keystore.properties.example`) and wires the
+  release signing config only when the file exists — absent means
+  unsigned release exactly as before, no behavior change for anyone who
+  doesn't opt in. `.gitignore` extended (`/keystore.properties`, `/apk/`).
+- README: "The one-command way" + "Release signing" sections ahead of
+  the existing manual block.
+
+### Process note — verified build
+The whole 0.2.6 build path (`./build-apk.sh`'s exact gradle invocation,
+`assembleDebug`) was executed on a clean Linux sandbox: JDK 21,
+commandline-tools + `platforms;android-36` + `build-tools;36.0.0`/
+`35.0.0`, first-ever build from a fresh clone-equivalent state (wrapper
+downloaded Gradle 8.11.1 itself). The signing-config branch (no
+keystore.properties present) compiled through the same path — the
+"absent file" case is the one that shipped, the signed case is the
+standard Properties pattern every Android doc shows.
+
 ## [0.2.5] — 2026-10-23
 
 Repo completion — the open-source hygiene items the plan and compact.md

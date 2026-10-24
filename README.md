@@ -92,6 +92,41 @@ cross-dependencies between `ui:*` modules.
 
 ## Building
 
+### The one-command way (Windows)
+
+Double-click **`build-apk.bat`** (or run it from a terminal). It pulls the
+latest commit, runs the Gradle build, and drops the finished APK in
+`apk\Andromeda-<version>-debug.apk`, opening that folder when done.
+
+```
+build-apk.bat            pull + debug APK (the default — installs fine for personal use)
+build-apk.bat release    pull + release APK (signed if keystore.properties exists — see below)
+build-apk.bat install    pull + debug APK + adb install to a connected device
+build-apk.bat nopull     skip the git pull (offline / local edits)
+build-apk.bat clean      clean + debug build
+```
+
+Same thing on macOS/Linux/CI: `./build-apk.sh` (same arguments).
+
+### Release signing (optional, one-time setup)
+
+Debug APKs are signed with the debug key and install anywhere — that's the
+recommended path for personal use. A **release** build only installs once
+signed:
+
+1. Generate a keystore once (one line with the JDK's `keytool` — the exact
+   command is in [`keystore.properties.example`](./keystore.properties.example)):
+2. `copy keystore.properties.example keystore.properties` and fill in the
+   four values (store file, store password, key alias, key password).
+   That file is **gitignored** — passwords never get committed.
+3. `build-apk.bat release` — the build picks the signing config up
+   automatically and the APK in `apk\` is signed and installable.
+
+Lose the keystore and you can never update the same app id again, so back it
+up somewhere offline once it exists.
+
+### The manual way
+
 Needs **JDK 17+** (set it in Android Studio's Gradle JDK setting, or
 `JAVA_HOME` on the CLI — JDK 21 works fine) and an Android SDK with
 `platforms;android-36` (Android Studio handles this on first sync).

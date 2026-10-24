@@ -1,0 +1,11 @@
+# Windows batch scripts must keep CRLF in the working tree regardless of
+# core.autocrlf settings — LF-only .bat files can break goto/call parsing.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Shell scripts must stay LF even if a Windows user edits them.
+*.sh text eol=lf
+gradlew text eol=lf
+
+# The wrapper jar stays binary.
+*.jar binary
