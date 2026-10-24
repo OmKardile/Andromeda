@@ -46,11 +46,14 @@ export function ContextMenu({ onOpenWidgetPicker, onOpenWallpaperPicker }: Conte
 
 /** closes itself when the pointer drags >10px from the opening position
  *  (iOS menu behavior — also unblocks the hold-and-drag flow: once the menu
- *  is gone the workspace gesture sees the movement again) */
+ *  is gone the workspace gesture sees the movement again).
+ *  Only counts as a drag while a button is held (e.buttons > 0) — hover
+ *  movement must not dismiss, or mouse users can never reach the menu. */
 function useCloseOnDrag(origin: { x: number; y: number } | undefined, close: () => void) {
   useEffect(() => {
     if (!origin) return;
     const onMove = (e: PointerEvent) => {
+      if (!e.buttons) return; // hover — not a drag
       if (Math.hypot(e.clientX - origin.x, e.clientY - origin.y) > 10) {
         close();
       }

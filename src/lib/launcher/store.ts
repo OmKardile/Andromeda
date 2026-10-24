@@ -4,11 +4,14 @@
 
 import { create } from 'zustand';
 import type {
+  CCToggles,
   DragPayload,
   Layout,
   Overlay,
   PlacedItem,
   Prefs,
+  Reminder,
+  Shade,
   WeatherData,
   WidgetInstance,
 } from './types';
@@ -18,8 +21,11 @@ import {
   defaultPrefs,
   loadLayout,
   loadPrefs,
+  loadReminders,
+  saveReminders,
   saveState,
 } from './storage';
+import { TRACKS } from './music';
 
 const MAX_PAGE = 3; // 4 pages total (zero page lives separately at -1)
 
@@ -77,6 +83,15 @@ export interface LauncherState {
   /** incremented every second — drives clock widgets */
   tick: number;
 
+  /** lock screen (boot state, honoring prefs.showLockScreen) */
+  locked: boolean;
+  /** control / notification center shade */
+  shade: Shade;
+  ccToggles: CCToggles;
+  /** media player state (survives navigation, not persisted) */
+  music: { playing: boolean; trackIndex: number; position: number };
+  reminders: Reminder[];
+
   hydrate: () => void;
   setPrefs: (patch: Partial<Prefs>) => void;
   resetAll: () => void;
@@ -89,6 +104,21 @@ export interface LauncherState {
   setWeatherLoading: (v: boolean) => void;
   setBattery: (level: number, charging: boolean, supported: boolean) => void;
   bumpTick: () => void;
+
+  unlock: () => void;
+  lock: () => void;
+  setShade: (s: Shade) => void;
+  toggleCC: (k: keyof CCToggles) => void;
+
+  playPause: () => void;
+  nextTrack: (dir?: number) => void;
+  seekTo: (pos: number) => void;
+  tickMusic: () => void;
+
+  addReminder: (text: string, list?: Reminder['list']) => void;
+  toggleReminder: (id: string) => void;
+  removeReminder: (id: string) => void;
+  clearDoneReminders: () => void;
 
   launchApp: (appId: string) => void;
   pushHistory: (q: string) => void;
@@ -137,12 +167,18 @@ export const useLauncher = create<LauncherState>((set, get) => ({
   batteryCharging: false,
   batterySupported: false,
   tick: 0,
+  locked: false,
+  shade: 'none',
+  ccToggles: { wifi: true, bluetooth: true, airplane: false, flashlight: false },
+  music: { playing: false, trackIndex: 0, position: 0 },
+  reminders: [],
 
   hydrate: () => {
     if (get().hydrated) return;
     const prefs = loadPrefs() ?? defaultPrefs();
     const layout = loadLayout() ?? defaultLayout();
-    set({ hydrated: true, prefs, layout });
+    const reminders = loadReminders();
+    set({ hydrated: true, prefs, layout, reminders, locked: prefs.showLockScreen });
   },
 
   setPrefs: (patch) => {
@@ -156,7 +192,17 @@ export const useLauncher = create<LauncherState>((set, get) => ({
     const prefs = defaultPrefs();
     const layout = defaultLayout();
     saveState(prefs, layout);
-    set({ prefs, layout, page: 0, overlay: { kind: 'none' }, editMode: false, dragging: null });
+    set({
+      prefs,
+      layout,
+      page: 0,
+      overlay: { kind: 'none' },
+      editMode: false,
+      dragging: null,
+      reminders: [],
+      shade: 'none',
+      music: { playing: false, trackIndex: 0, position: 0 },
+    });
   },
 
   setPage: (i) => set({ page: clampPage(i) }),
@@ -169,6 +215,81 @@ export const useLauncher = create<LauncherState>((set, get) => ({
   setBattery: (level, charging, supported) =>
     set({ batteryLevel: level, batteryCharging: charging, batterySupported: supported }),
   bumpTick: () => set((s) => ({ tick: s.tick + 1 })),
+
+  unlock: () => set({ locked: false, shade: 'none' }),
+  lock: () =>
+    set({
+      locked: true,
+      overlay: { kind: 'none' },
+      shade: 'none',
+      editMode: false,
+      dragging: null,
+      music: { ...get().music, playing: false },
+    }),
+  setShade: (s) => {
+    // the shade only opens over the home screen (no app/drawer overlays)
+    if (s !== 'none') {
+      const st = get();
+      if (st.locked || st.overlay.kind !== 'none' || st.editMode) return;
+    }
+    set({ shade: s });
+  },
+  toggleCC: (k) => set((s) => ({ ccToggles: { ...s.ccToggles, [k]: !s.ccToggles[k] } })),
+
+  playPause: () => set((s) => ({ music: { ...s.music, playing: !s.music.playing } })),
+  nextTrack: (dir = 1) =>
+    set((s) => ({
+      music: {
+        ...s.music,
+        trackIndex: (s.music.trackIndex + dir + TRACKS.length) % TRACKS.length,
+        position: 0,
+        playing: true,
+      },
+    })),
+  seekTo: (pos) =>
+    set((s) => {
+      const dur = TRACKS[s.music.trackIndex]?.duration ?? 1;
+      return { music: { ...s.music, position: Math.max(0, Math.min(dur - 1, pos)) } };
+    }),
+  tickMusic: () =>
+    set((s) => {
+      if (!s.music.playing) return {};
+      const dur = TRACKS[s.music.trackIndex]?.duration ?? 1;
+      if (s.music.position + 1 >= dur) {
+        return {
+          music: {
+            playing: true,
+            trackIndex: (s.music.trackIndex + 1) % TRACKS.length,
+            position: 0,
+          },
+        };
+      }
+      return { music: { ...s.music, position: s.music.position + 1 } };
+    }),
+
+  addReminder: (text, list = 'today') => {
+    const t = text.trim();
+    if (!t) return;
+    const r: Reminder = { id: uid(), text: t, done: false, createdAt: Date.now(), list };
+    const reminders = [r, ...get().reminders];
+    set({ reminders });
+    saveReminders(reminders);
+  },
+  toggleReminder: (id) => {
+    const reminders = get().reminders.map((r) => (r.id === id ? { ...r, done: !r.done } : r));
+    set({ reminders });
+    saveReminders(reminders);
+  },
+  removeReminder: (id) => {
+    const reminders = get().reminders.filter((r) => r.id !== id);
+    set({ reminders });
+    saveReminders(reminders);
+  },
+  clearDoneReminders: () => {
+    const reminders = get().reminders.filter((r) => !r.done);
+    set({ reminders });
+    saveReminders(reminders);
+  },
 
   launchApp: (appId) => {
     // usage tracking for the suggestions widget

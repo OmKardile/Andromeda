@@ -15,6 +15,8 @@ export type AppScreenId =
   | 'calculator'
   | 'photos'
   | 'calendar'
+  | 'music'
+  | 'reminders'
   | null;
 
 export interface AppDef {
@@ -42,7 +44,9 @@ export type WidgetKind =
   | 'weather'
   | 'battery'
   | 'photo'
-  | 'suggestions';
+  | 'suggestions'
+  | 'music'
+  | 'reminders';
 
 export interface WidgetInstance {
   id: string;
@@ -158,6 +162,12 @@ export type PageTransition = 'default' | 'rotation' | 'flip' | 'zoom' | 'alpha';
 export interface Prefs {
   /** pref_blur_effect_enable — master gate for the whole glass system (default true) */
   blurEnabled: boolean;
+  /** appearance — dark app screens & surfaces (default false) */
+  darkMode: boolean;
+  /** show the iOS-style lock screen on boot (default true) */
+  showLockScreen: boolean;
+  /** display brightness 0.30..1 (default 1) — dims a global overlay */
+  brightness: number;
   /** scroll_type — workspace page transition (default "default") */
   pageTransition: PageTransition;
   /** app_icon_size_change_v2 — 0.80..1.20 (default 1) */
@@ -209,4 +219,46 @@ export interface DragPayload {
   folderId?: string;
   originPage?: number;
   originDockIndex?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Music (now playing)
+// ---------------------------------------------------------------------------
+
+export interface TrackDef {
+  id: string;
+  title: string;
+  artist: string;
+  /** seconds */
+  duration: number;
+  /** CSS gradient for the generated cover art */
+  art: string;
+  /** emoji stamped on the cover */
+  glyph: string;
+}
+
+// ---------------------------------------------------------------------------
+// Reminders
+// ---------------------------------------------------------------------------
+
+export interface Reminder {
+  id: string;
+  text: string;
+  done: boolean;
+  createdAt: number;
+  /** optional due bucket for grouping */
+  list: 'today' | 'scheduled' | 'all';
+}
+
+// ---------------------------------------------------------------------------
+// Shade (control / notification centers)
+// ---------------------------------------------------------------------------
+
+export type Shade = 'none' | 'control' | 'notifications';
+
+export interface CCToggles {
+  wifi: boolean;
+  bluetooth: boolean;
+  airplane: boolean;
+  flashlight: boolean;
 }

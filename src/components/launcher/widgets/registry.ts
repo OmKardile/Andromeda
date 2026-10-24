@@ -35,6 +35,8 @@ import { WeatherWidget } from './WeatherWidget';
 import { BatteryWidget } from './BatteryWidget';
 import { PhotoWidget } from './PhotoWidget';
 import { SuggestionsWidget } from './SuggestionsWidget';
+import { MusicWidget } from './MusicWidget';
+import { RemindersWidget } from './RemindersWidget';
 
 export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
   {
@@ -96,6 +98,23 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
     description: 'Smart app suggestions',
     sizes: [{ span: 4, rows: 2 }],
     component: SuggestionsWidget,
+  },
+  {
+    kind: 'music',
+    title: 'Now Playing',
+    description: 'Controls for the current track',
+    sizes: [{ span: 4, rows: 2 }],
+    component: MusicWidget,
+  },
+  {
+    kind: 'reminders',
+    title: 'Reminders',
+    description: 'Your open to-dos, inline',
+    sizes: [
+      { span: 2, rows: 2 },
+      { span: 4, rows: 2 },
+    ],
+    component: RemindersWidget,
   },
 ];
 

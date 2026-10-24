@@ -5,6 +5,7 @@
 
 import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { useLauncher } from '@/lib/launcher/store';
+import { displayName } from '@/lib/launcher/apps';
 import { GRID, MOTION, glassStyle } from '@/lib/launcher/glass';
 import { AppIcon } from './AppIcon';
 import { useDrag } from './DragLayer';
@@ -70,9 +71,9 @@ export function Dock() {
 
   return (
     <div
-      className={`pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-6 ${dragging ? '' : 'pointer-events-auto'}`}
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-6"
+      style={{ height: DOCK_H + 24, pointerEvents: dragging ? 'none' : 'auto' }}
       onPointerDown={onStripPointerDown}
-      style={{ height: DOCK_H + 24 }}
     >
       <div
         className={`pointer-events-auto relative mx-4 flex w-full items-center justify-around px-3 ${dragging ? 'drag-on' : ''}`}
@@ -95,6 +96,8 @@ export function Dock() {
                   data-item-key={`dock-${i}-${appId}`}
                   data-page={-2}
                   className="drag-item"
+                  role="button"
+                  aria-label={`Open ${displayName(appId, prefs)}`}
                   onPointerDown={(e) => onIconPointerDown(e, i, appId)}
                   onPointerUp={() => clearPress(i)}
                   onPointerLeave={() => clearPress(i)}

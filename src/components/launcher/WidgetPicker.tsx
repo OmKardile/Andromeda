@@ -15,8 +15,9 @@ import type { WidgetKind } from '@/lib/launcher/types';
 /** Catalog grouped by function. */
 const GROUPS: { label: string; kinds: WidgetKind[] }[] = [
   { label: 'Clock & Time', kinds: ['clock-analog', 'clock-digital', 'world-clock'] },
-  { label: 'Calendar', kinds: ['calendar'] },
+  { label: 'Calendar & Tasks', kinds: ['calendar', 'reminders'] },
   { label: 'Weather', kinds: ['weather'] },
+  { label: 'Music & Media', kinds: ['music'] },
   { label: 'Essentials', kinds: ['battery', 'suggestions'] },
   { label: 'Photos', kinds: ['photo'] },
 ];
@@ -110,6 +111,21 @@ function WidgetGlyph({ kind }: { kind: WidgetKind }) {
           />
           <circle cx="30" cy="28" r="2.2" fill="currentColor" />
           <circle cx="11" cy="29" r="1.6" fill="currentColor" />
+        </svg>
+      );
+    case 'music':
+      return (
+        <svg viewBox="0 0 40 40" className={chip} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+          <circle cx="14.5" cy="27" r="4" fill="#FA2C55" stroke="none" />
+          <circle cx="28.5" cy="24" r="4" fill="#FA2C55" stroke="none" />
+          <path d="M18.5 27V11l14-3v16" />
+        </svg>
+      );
+    case 'reminders':
+      return (
+        <svg viewBox="0 0 40 40" className={chip} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="20" cy="20" r="13.5" />
+          <path d="M15.5 14.5v5M16.5 21.5l3.5 3 5-6.5" stroke="#E8890C" />
         </svg>
       );
   }

@@ -4,7 +4,8 @@
 // Layers (bottom → top):
 //   wallpaper → workspace (pages + zero page) → dock → page indicator
 //   → overlays (drawer / search / folder / app screen / context menu)
-//   → edit banner → drag layer
+//   → edit banner → drag layer → shade (control/notification) → lock screen
+//   → brightness dim
 
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
@@ -22,6 +23,9 @@ import { ContextMenu } from './ContextMenu';
 import { WidgetPicker } from './WidgetPicker';
 import { WallpaperPicker } from './WallpaperPicker';
 import { DragLayer } from './DragLayer';
+import { LockScreen } from './LockScreen';
+import { ControlCenter } from './ControlCenter';
+import { NotificationCenter } from './NotificationCenter';
 import { fetchWeather } from '@/lib/launcher/weather';
 import { CITIES } from '@/lib/launcher/storage';
 
@@ -30,6 +34,7 @@ export function Launcher() {
   const prefs = useLauncher((s) => s.prefs);
   const overlay = useLauncher((s) => s.overlay);
   const editMode = useLauncher((s) => s.editMode);
+  const locked = useLauncher((s) => s.locked);
   const setEditMode = useLauncher((s) => s.setEditMode);
   const setWeather = useLauncher((s) => s.setWeather);
   const setBattery = useLauncher((s) => s.setBattery);
@@ -42,9 +47,13 @@ export function Launcher() {
     hydrate();
   }, [hydrate]);
 
-  // 1-second ticker driving clock widgets
+  // 1-second ticker driving clock widgets + the music engine
   useEffect(() => {
-    const t = setInterval(() => useLauncher.getState().bumpTick(), 1000);
+    const t = setInterval(() => {
+      const st = useLauncher.getState();
+      st.bumpTick();
+      st.tickMusic();
+    }, 1000);
     return () => clearInterval(t);
   }, []);
 
@@ -94,12 +103,13 @@ export function Launcher() {
     };
   }, [prefs.city, prefs.autoRefreshH, prefs.tempUnit, setWeather]);
 
-  // swipe-down-on-home = nothing; ESC closes overlays / edit mode
+  // ESC closes overlays / shade / edit mode
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const st = useLauncher.getState();
       if (e.key !== 'Escape') return;
-      if (st.overlay.kind !== 'none') st.closeOverlay();
+      if (st.shade !== 'none') st.setShade('none');
+      else if (st.overlay.kind !== 'none') st.closeOverlay();
       else if (st.editMode) st.setEditMode(false);
     };
     window.addEventListener('keydown', onKey);
@@ -114,6 +124,7 @@ export function Launcher() {
   }, [prefs.city]);
 
   const overlayOpen = overlay.kind !== 'none';
+  const shadeAvailable = !locked && !overlayOpen && !editMode;
 
   return (
     <DragLayer>
@@ -132,6 +143,24 @@ export function Launcher() {
           <Dock />
           <PageIndicator />
         </div>
+
+        {/* shade handles — left half opens notifications, right half control center */}
+        {shadeAvailable && (
+          <>
+            <button
+              type="button"
+              className="absolute left-0 top-0 z-[46] h-[30px] w-1/2"
+              onClick={() => useLauncher.getState().setShade('notifications')}
+              aria-label="Open Notification Center"
+            />
+            <button
+              type="button"
+              className="absolute right-0 top-0 z-[46] h-[30px] w-1/2"
+              onClick={() => useLauncher.getState().setShade('control')}
+              aria-label="Open Control Center"
+            />
+          </>
+        )}
 
         {/* home indicator (hideNav pref) */}
         {!prefs.hideNav && (
@@ -162,6 +191,22 @@ export function Launcher() {
               Done
             </button>
           </div>
+        )}
+
+        {/* shade (control / notification centers) */}
+        <ControlCenter />
+        <NotificationCenter />
+
+        {/* lock screen on top of everything */}
+        <LockScreen />
+
+        {/* global brightness dim (control center / settings slider) */}
+        {prefs.brightness < 0.995 && (
+          <div
+            className="pointer-events-none absolute inset-0 z-[95] transition-opacity duration-200"
+            style={{ background: 'rgba(0,0,0,1)', opacity: (1 - prefs.brightness) * 0.75 }}
+            aria-hidden
+          />
         )}
       </div>
     </DragLayer>

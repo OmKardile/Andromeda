@@ -18,11 +18,14 @@ import {
   Image as ImageIcon,
   Info,
   LayoutGrid,
+  Lock,
   MapPin,
+  Moon,
   RectangleHorizontal,
   RefreshCw,
   Sparkles,
   SquarePen,
+  Sun,
   Thermometer,
   Trash2,
   Type,
@@ -72,13 +75,15 @@ function IOSSwitch({
 }
 
 function ChevronTrail() {
-  return <ChevronRight size={16} color="#C7C7CC" aria-hidden />;
+  const dark = useLauncher((s) => s.prefs.darkMode);
+  return <ChevronRight size={16} color={dark ? '#5C5C60' : '#C7C7CC'} aria-hidden />;
 }
 
 function ValueTrail({ children }: { children: ReactNode }) {
+  const dark = useLauncher((s) => s.prefs.darkMode);
   return (
     <>
-      <span className="mr-1 text-[15px] text-[#3C3C43]/60">{children}</span>
+      <span className={`mr-1 text-[15px] ${dark ? 'text-white/50' : 'text-[#3C3C43]/60'}`}>{children}</span>
       <ChevronTrail />
     </>
   );
@@ -97,9 +102,15 @@ interface RowProps {
 }
 
 function Row({ icon, iconBg, iconFg = '#fff', label, caption, onClick, trailing, danger, first }: RowProps) {
+  const dark = useLauncher((s) => s.prefs.darkMode);
   const inner = (
     <>
-      {!first && <span className="absolute bottom-auto left-[57px] right-0 top-0 h-px bg-[#3C3C43]/10" aria-hidden />}
+      {!first && (
+        <span
+          className={`absolute bottom-auto left-[57px] right-0 top-0 h-px ${dark ? 'bg-white/10' : 'bg-[#3C3C43]/10'}`}
+          aria-hidden
+        />
+      )}
       <span
         className="flex h-[29px] w-[29px] shrink-0 items-center justify-center rounded-[6px]"
         style={{ background: iconBg }}
@@ -107,8 +118,12 @@ function Row({ icon, iconBg, iconFg = '#fff', label, caption, onClick, trailing,
         {icon}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className={`truncate text-[15px] ${danger ? 'text-[#FF3B30]' : 'text-black'}`}>{label}</span>
-        {caption && <span className="text-[12px] leading-snug text-[#3C3C43]/60">{caption}</span>}
+        <span className={`truncate text-[15px] ${danger ? 'text-[#FF453A]' : dark ? 'text-white' : 'text-black'}`}>
+          {label}
+        </span>
+        {caption && (
+          <span className={`text-[12px] leading-snug ${dark ? 'text-white/50' : 'text-[#3C3C43]/60'}`}>{caption}</span>
+        )}
       </span>
       {trailing}
     </>
@@ -116,7 +131,11 @@ function Row({ icon, iconBg, iconFg = '#fff', label, caption, onClick, trailing,
   const cls = `relative flex w-full items-center gap-3 px-4 ${caption ? 'min-h-[56px] py-2' : 'min-h-[44px]'}`;
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={`${cls} text-left active:bg-black/[0.04]`}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${cls} text-left ${dark ? 'active:bg-white/[0.06]' : 'active:bg-black/[0.04]'}`}
+      >
         {inner}
       </button>
     );
@@ -125,14 +144,19 @@ function Row({ icon, iconBg, iconFg = '#fff', label, caption, onClick, trailing,
 }
 
 function Section({ title, children }: { title?: string; children: ReactNode }) {
+  const dark = useLauncher((s) => s.prefs.darkMode);
   return (
     <section className="mb-6">
       {title && (
-        <h2 className="mb-1.5 pl-[26px] pr-4 text-[13px] font-normal uppercase tracking-[0.06em] text-[#3C3C43]/60">
+        <h2
+          className={`mb-1.5 pl-[26px] pr-4 text-[13px] font-normal uppercase tracking-[0.06em] ${
+            dark ? 'text-white/50' : 'text-[#3C3C43]/60'
+          }`}
+        >
           {title}
         </h2>
       )}
-      <div className="mx-[10px] overflow-hidden rounded-[10px] bg-white">{children}</div>
+      <div className={`mx-[10px] overflow-hidden rounded-[10px] ${dark ? 'bg-[#1C1C1E]' : 'bg-white'}`}>{children}</div>
     </section>
   );
 }
@@ -150,13 +174,16 @@ function MiniAppIcon({ app, size = 29 }: { app: AppDef; size?: number }) {
 }
 
 function SubHeader({ title, onBack }: { title: string; onBack: () => void }) {
+  const dark = useLauncher((s) => s.prefs.darkMode);
   return (
-    <div className="z-10 shrink-0 bg-[#F2F2F7] px-3 pb-2 pt-[58px]">
+    <div className={`z-10 shrink-0 px-3 pb-2 pt-[58px] ${dark ? 'bg-black' : 'bg-[#F2F2F7]'}`}>
       <div className="relative flex h-11 items-center justify-center">
         <button
           type="button"
           onClick={onBack}
-          className="absolute left-1 flex h-11 items-center gap-0.5 pr-2 text-[15px] font-medium text-black active:opacity-60"
+          className={`absolute left-1 flex h-11 items-center gap-0.5 pr-2 text-[15px] font-medium active:opacity-60 ${
+            dark ? 'text-white' : 'text-black'
+          }`}
           aria-label={`Back, close ${title}`}
         >
           <ChevronLeft size={20} strokeWidth={2.5} /> Settings
@@ -672,6 +699,44 @@ function HiddenAppsPage({ onBack }: { onBack: () => void }) {
 }
 
 // ---------------------------------------------------------------------------
+// Brightness sub-page
+// ---------------------------------------------------------------------------
+
+function BrightnessPage({ onBack }: { onBack: () => void }) {
+  const brightness = useLauncher((s) => s.prefs.brightness);
+  const setPrefs = useLauncher((s) => s.setPrefs);
+  return (
+    <>
+      <SubHeader title="Brightness" onBack={onBack} />
+      <div className="launcher-scroll min-h-0 flex-1 overflow-y-auto pb-12">
+        <p className="mb-4 px-[26px] text-[13px] leading-snug text-[#3C3C43]/60">
+          Drag to dim the display. This is the same slider you&apos;ll find in Control Center.
+        </p>
+        <div className="mx-[10px] rounded-[10px] bg-white px-4 py-4">
+          <input
+            type="range"
+            min={30}
+            max={100}
+            value={Math.round(brightness * 100)}
+            onChange={(e) => setPrefs({ brightness: Number(e.target.value) / 100 })}
+            className="h-2 w-full cursor-pointer appearance-none rounded-full bg-black/10 accent-[#0A84FF]"
+            aria-label="Display brightness"
+          />
+          <div className="mt-2 flex justify-between text-[12px] font-medium tabular-nums text-black/45">
+            <span>30%</span>
+            <span>{Math.round(brightness * 100)}%</span>
+            <span>100%</span>
+          </div>
+        </div>
+        <div className="mx-[10px] mt-4 rounded-[10px] bg-white px-4 py-3 text-center text-[13px] text-black/55">
+          Preview area — the whole screen dims live.
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Reset confirmation (iOS-style alert)
 // ---------------------------------------------------------------------------
 
@@ -730,6 +795,8 @@ function renderSubPage(id: string, onBack: () => void) {
       return <RenamesPage onBack={onBack} />;
     case 'hidden':
       return <HiddenAppsPage onBack={onBack} />;
+    case 'brightness':
+      return <BrightnessPage onBack={onBack} />;
     default:
       return null;
   }
@@ -740,6 +807,7 @@ export function SettingsScreen() {
   const setPrefs = useLauncher((s) => s.setPrefs);
   const resetAll = useLauncher((s) => s.resetAll);
   const closeOverlay = useLauncher((s) => s.closeOverlay);
+  const lock = useLauncher((s) => s.lock);
 
   // local navigation stack (push/pop with 320ms slide) — no router needed.
   // The stack is depth-1 in practice (sub-pages only push from the root).
@@ -758,25 +826,28 @@ export function SettingsScreen() {
 
   const top = stack.length > 0 ? stack[stack.length - 1] : null;
   const transitionLabel = TRANSITIONS.find((t) => t.id === prefs.pageTransition)?.label ?? 'Default';
+  const dark = prefs.darkMode;
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#F2F2F7]">
+    <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-black' : 'bg-[#F2F2F7]'}`}>
       <style>{TRANSITION_KEYFRAMES}</style>
 
       {/* root page (slides left while a sub-page is open) */}
       <div
-        className="absolute inset-0 flex flex-col bg-[#F2F2F7]"
+        className={`absolute inset-0 flex flex-col ${dark ? 'bg-black' : 'bg-[#F2F2F7]'}`}
         style={{
           transform: stack.length > 0 ? 'translateX(-22%)' : 'translateX(0)',
           transition: 'transform 320ms cubic-bezier(0.25,0.1,0.25,1)',
         }}
       >
         <div className="flex shrink-0 items-end justify-between px-5 pb-2 pt-[58px]">
-          <h1 className="text-[34px] font-bold text-black">Settings</h1>
+          <h1 className={`text-[34px] font-bold ${dark ? 'text-white' : 'text-black'}`}>Settings</h1>
           <button
             type="button"
             onClick={closeOverlay}
-            className="mb-1 flex h-11 items-center gap-0.5 rounded-full bg-black/[0.06] pl-2 pr-4 text-[15px] font-medium text-black active:bg-black/10"
+            className={`mb-1 flex h-11 items-center gap-0.5 rounded-full pl-2 pr-4 text-[15px] font-medium active:opacity-70 ${
+              dark ? 'bg-white/10 text-white' : 'bg-black/[0.06] text-black'
+            }`}
             aria-label="Back to home screen"
           >
             <ChevronLeft size={18} strokeWidth={2.5} /> Home
@@ -850,6 +921,56 @@ export function SettingsScreen() {
                   label="Flexible text size"
                 />
               }
+            />
+          </Section>
+
+          {/* APPEARANCE */}
+          <Section title="Appearance">
+            <Row
+              first
+              iconBg="#5E5CE6"
+              icon={<Moon size={17} />}
+              label="Dark Mode"
+              caption="Dark app screens & surfaces"
+              trailing={
+                <IOSSwitch
+                  checked={prefs.darkMode}
+                  onChange={(v) => setPrefs({ darkMode: v })}
+                  label="Dark mode"
+                />
+              }
+            />
+            <Row
+              iconBg="#8E8E93"
+              icon={<Lock size={17} />}
+              label="Show Lock Screen"
+              caption="Lock on launch (tap the lock to return)"
+              trailing={
+                <IOSSwitch
+                  checked={prefs.showLockScreen}
+                  onChange={(v) => setPrefs({ showLockScreen: v })}
+                  label="Show lock screen"
+                />
+              }
+            />
+            <Row
+              iconBg="#FFB340"
+              icon={<Sun size={17} />}
+              label="Brightness"
+              caption="Dims the whole display"
+              onClick={() => push('brightness')}
+              trailing={<ValueTrail>{Math.round(prefs.brightness * 100)}%</ValueTrail>}
+            />
+            <Row
+              iconBg="#0A7A6E"
+              icon={<Lock size={17} />}
+              label="Lock Now"
+              caption="Back to the lock screen"
+              onClick={() => {
+                closeOverlay();
+                lock();
+              }}
+              trailing={<ChevronTrail />}
             />
           </Section>
 

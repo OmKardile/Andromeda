@@ -2,10 +2,12 @@
 // SharedPreferences-equivalent: a compact JSON document in localStorage,
 // hydrated once on mount and debounced-saved on change.
 
-import type { Layout, Prefs, WidgetInstance } from './types';
+import type { Layout, Prefs, Reminder, WidgetInstance } from './types';
 
 const PREFS_KEY = 'andromeda.prefs';
 const LAYOUT_KEY = 'andromeda.layout';
+const REMINDERS_KEY = 'andromeda.reminders';
+const NOTIFICATIONS_CLEARED_KEY = 'andromeda.ncCleared';
 
 export const CITIES = [
   { id: 'new-delhi', name: 'New Delhi', country: 'IN', lat: 28.61, lon: 77.21 },
@@ -45,6 +47,9 @@ export const WALLPAPER_IMAGES = [
   '/wallpapers/w-botanical.png',
   '/wallpapers/w-dune.png',
   '/wallpapers/w-geo.png',
+  // dark pair — pairs beautifully with Dark Mode
+  '/wallpapers/w-night.png',
+  '/wallpapers/w-nebula.png',
 ];
 
 /** 18 built-in solid colors, starting with #079ecb per the recovered spec. */
@@ -92,6 +97,9 @@ export function newWidget(
 export function defaultPrefs(): Prefs {
   return {
     blurEnabled: true,
+    darkMode: false,
+    showLockScreen: true,
+    brightness: 1,
     pageTransition: 'default',
     iconScale: 1,
     tempUnit: 'C',
@@ -209,4 +217,54 @@ export function clearAll(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(PREFS_KEY);
   window.localStorage.removeItem(LAYOUT_KEY);
+  window.localStorage.removeItem(REMINDERS_KEY);
+  window.localStorage.removeItem(NOTIFICATIONS_CLEARED_KEY);
+}
+
+// ---------------------------------------------------------------------------
+// Reminders (separate key — content, not shell config)
+// ---------------------------------------------------------------------------
+
+export function loadReminders(): Reminder[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(REMINDERS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((r): r is Reminder => !!r && typeof r.id === 'string' && typeof r.text === 'string')
+      .map((r) => ({ ...r, done: !!r.done, createdAt: r.createdAt ?? Date.now(), list: r.list ?? 'all' }));
+  } catch {
+    return [];
+  }
+}
+
+export function saveReminders(list: Reminder[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(REMINDERS_KEY, JSON.stringify(list));
+  } catch {
+    // non-fatal
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Notification center "cleared" flag
+// ---------------------------------------------------------------------------
+
+export function loadNotificationsCleared(): number {
+  if (typeof window === 'undefined') return 0;
+  const raw = window.localStorage.getItem(NOTIFICATIONS_CLEARED_KEY);
+  const n = raw ? Number(raw) : NaN;
+  return Number.isFinite(n) ? n : 0;
+}
+
+export function saveNotificationsCleared(at: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(NOTIFICATIONS_CLEARED_KEY, String(at));
+  } catch {
+    // non-fatal
+  }
 }

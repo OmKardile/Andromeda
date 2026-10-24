@@ -9,6 +9,8 @@
 //   folder animation 350ms, PathInterpolator(0.2, 0, 0, 1)
 //   drop interpolator anticipate-overshoot cubic-bezier(.61,.27,1,1.32)
 
+import { useLauncher } from './store';
+
 export const GLASS = {
   baseTint: 'rgba(255,255,255,0.40)',        // #66FFFFFF
   dimOverlay: 'rgba(239,239,239,0.20)',      // #33EFEFEF (SRC_ATOP dim)
@@ -47,16 +49,26 @@ export const GRID = {
   dockRadiusRatio: 0.3,
 } as const;
 
-/** Compose a glass panel style from the recovered constants. */
+/** Compose a glass panel style from the recovered constants.
+ *  Honors the global blur preference: when blur is disabled, panels fall
+ *  back to near-opaque tints (matching the widget fallbacks) instead of
+ *  backdrop-filtering — the pref is a global kill-switch, not per-widget. */
 export function glassStyle(radius: number, opts?: { dark?: boolean; strength?: number }): React.CSSProperties {
   const strength = opts?.strength ?? 1;
+  const blurOn = useLauncher.getState()?.prefs?.blurEnabled !== false;
   const tint = opts?.dark
-    ? `rgba(30,30,32,${0.55 * strength})`
-    : GLASS.baseTint;
+    ? `rgba(30,30,32,${(blurOn ? 0.55 : 0.86) * strength})`
+    : blurOn
+      ? GLASS.baseTint
+      : 'rgba(255,255,255,0.94)';
   return {
     background: tint,
-    backdropFilter: `blur(${GLASS.blurPx}px) saturate(${Math.round(160 * strength)}%)`,
-    WebkitBackdropFilter: `blur(${GLASS.blurPx}px) saturate(${Math.round(160 * strength)}%)`,
+    ...(blurOn
+      ? {
+          backdropFilter: `blur(${GLASS.blurPx}px) saturate(${Math.round(160 * strength)}%)`,
+          WebkitBackdropFilter: `blur(${GLASS.blurPx}px) saturate(${Math.round(160 * strength)}%)`,
+        }
+      : {}),
     borderRadius: radius,
     boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.28), inset 0 0 0 2px rgba(0,0,0,0.015), 0 8px 28px rgba(0,0,0,${0.16 * strength})`,
   };
